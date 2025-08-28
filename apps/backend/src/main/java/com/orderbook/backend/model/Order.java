@@ -11,6 +11,6 @@ public class Order {
     public enum Side { BUY, SELL }
     
     private Side side;
-    private double price;
-    private int quantity;
+    private int price;
+    private int lot;
 }
