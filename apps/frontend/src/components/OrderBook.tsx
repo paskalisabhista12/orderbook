@@ -7,6 +7,7 @@ import { getStompClient } from "@/utils/stompClient";
 interface Order {
     price: number;
     totalLot: number;
+    freq: number;
 }
 
 interface OrderBookResponse {
@@ -47,46 +48,68 @@ export default function OrderBook() {
             stompClient.deactivate();
         };
     }, []);
+
+    const nf = new Intl.NumberFormat("en-US");
     return (
-        <div className="grid grid-cols-3 gap-4 p-4 w-full max-w-4xl mx-auto">
-            {/* Bids (Buy orders) */}
-            <div className="bg-green-50 rounded-2xl shadow p-4">
-                <h2 className="text-lg font-bold text-green-700 mb-2">Bids</h2>
-                <div className="space-y-1">
-                    {bids.map((order, idx) => (
-                        <div
-                            key={idx}
-                            className="flex justify-between text-sm font-mono text-green-900"
-                        >
-                            <span>{order.price.toFixed(2)}</span>
-                            <span>{order.totalLot}</span>
-                        </div>
-                    ))}
-                </div>
+        <div className="w-full max-w-5xl mx-auto bg-gray-900 text-white rounded-lg shadow overflow-hidden font-mono">
+            {/* Header */}
+            <div className="grid grid-cols-6 text-xs bg-gray-800 font-bold text-center">
+                <div className="py-2">Freq</div>
+                <div className="py-2">Lot</div>
+                <div className="py-2">Bid</div>
+
+                <div className="py-2 border-l border-gray-700">Offer</div>
+                <div className="py-2">Lot</div>
+                <div className="py-2">Freq</div>
             </div>
 
-            {/* Middle: Last Price */}
-            <div className="flex flex-col justify-center items-center bg-gray-50 rounded-2xl shadow p-4">
-                <h2 className="text-lg font-bold text-gray-600">Last Price</h2>
-                <span className="text-2xl font-bold text-gray-900">
-                    {lastPrice ? lastPrice.toFixed(2) : "--"}
-                </span>
-            </div>
+            {/* Rows */}
+            <div className="divide-y divide-gray-800">
+                {Array.from({ length: Math.max(bids.length, asks.length) }).map(
+                    (_, idx) => {
+                        const bid = bids[idx];
+                        const ask = asks[idx];
+                        const isBestBid = idx === 0 && !!bid; // assuming arrays are sorted best→worst
+                        const isBestAsk = idx === 0 && !!ask;
 
-            {/* Asks (Sell orders) */}
-            <div className="bg-red-50 rounded-2xl shadow p-4">
-                <h2 className="text-lg font-bold text-red-700 mb-2">Asks</h2>
-                <div className="space-y-1">
-                    {asks.map((order, idx) => (
-                        <div
-                            key={idx}
-                            className="flex justify-between text-sm font-mono text-red-900"
-                        >
-                            <span>{order.price.toFixed(2)}</span>
-                            <span>{order.totalLot}</span>
-                        </div>
-                    ))}
-                </div>
+                        return (
+                            <div
+                                key={idx}
+                                className="grid grid-cols-6 text-sm text-center hover:bg-gray-800"
+                            >
+                                {/* Bid side */}
+                                <div className="py-1 text-gray-400">
+                                    {bid?.freq ?? "-"}
+                                </div>
+                                <div className="py-1">
+                                    {bid ? nf.format(bid.totalLot) : "-"}
+                                </div>
+                                <div
+                                    className={`py-1 font-semibold ${
+                                        bid ? "text-green-400" : "text-gray-500"
+                                    } ${isBestBid ? "bg-green-900/20" : ""}`}
+                                >
+                                    {bid ? bid.price.toFixed(2) : "-"}
+                                </div>
+
+                                {/* Ask side */}
+                                <div
+                                    className={`py-1 font-semibold border-l border-gray-700 ${
+                                        ask ? "text-red-400" : "text-gray-500"
+                                    } ${isBestAsk ? "bg-red-900/20" : ""}`}
+                                >
+                                    {ask ? ask.price.toFixed(2) : "-"}
+                                </div>
+                                <div className="py-1">
+                                    {ask ? nf.format(ask.totalLot) : "-"}
+                                </div>
+                                <div className="py-1 text-gray-400">
+                                    {ask?.freq ?? "-"}
+                                </div>
+                            </div>
+                        );
+                    }
+                )}
             </div>
         </div>
     );
