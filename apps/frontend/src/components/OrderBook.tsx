@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { IMessage } from "@stomp/stompjs";
 import { getStompClient } from "@/utils/stompClient";
 
+type OrderFormProps = {
+    setPrice: (price: string) => void;
+};
+
 interface Order {
     price: number;
     totalLot: number;
@@ -16,7 +20,7 @@ interface OrderBookResponse {
     lastPrice?: number;
 }
 
-export default function OrderBook() {
+export default function OrderBook({ setPrice }: OrderFormProps) {
     const [bids, setBids] = useState<Order[]>([]);
     const [asks, setAsks] = useState<Order[]>([]);
     const [lastPrice, setLastPrice] = useState<number | null>(null);
@@ -69,7 +73,7 @@ export default function OrderBook() {
                     (_, idx) => {
                         const bid = bids[idx];
                         const ask = asks[idx];
-                        const isBestBid = idx === 0 && !!bid; // assuming arrays are sorted best→worst
+                        const isBestBid = idx === 0 && !!bid;
                         const isBestAsk = idx === 0 && !!ask;
 
                         return (
@@ -85,8 +89,13 @@ export default function OrderBook() {
                                     {bid ? nf.format(bid.totalLot) : "-"}
                                 </div>
                                 <div
-                                    className={`py-1 font-semibold ${
-                                        bid ? "text-green-400" : "text-gray-500"
+                                    onClick={() =>
+                                        bid && setPrice(String(bid.price))
+                                    }
+                                    className={`py-1 font-semibold cursor-pointer transition ${
+                                        bid
+                                            ? "text-green-400 hover:text-green-300"
+                                            : "text-gray-500 cursor-default"
                                     } ${isBestBid ? "bg-green-900/20" : ""}`}
                                 >
                                     {bid ? bid.price.toFixed(2) : "-"}
@@ -94,8 +103,13 @@ export default function OrderBook() {
 
                                 {/* Ask side */}
                                 <div
-                                    className={`py-1 font-semibold border-l border-gray-700 ${
-                                        ask ? "text-red-400" : "text-gray-500"
+                                    onClick={() =>
+                                        ask && setPrice(String(ask.price))
+                                    }
+                                    className={`py-1 font-semibold border-l border-gray-700 cursor-pointer transition ${
+                                        ask
+                                            ? "text-red-400 hover:text-red-300"
+                                            : "text-gray-500 cursor-default"
                                     } ${isBestAsk ? "bg-red-900/20" : ""}`}
                                 >
                                     {ask ? ask.price.toFixed(2) : "-"}
