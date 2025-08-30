@@ -6,7 +6,7 @@ import { getStompClient } from "@/utils/stompClient";
 
 interface Order {
     price: number;
-    lot: number;
+    totalLot: number;
 }
 
 interface OrderBookResponse {
@@ -29,12 +29,13 @@ export default function OrderBook() {
             // subscribe to updates
             stompClient.subscribe("/topic/orderbook", (message: IMessage) => {
                 if (message.body) {
+                    console.log(JSON.parse(message.body));
                     const data: OrderBookResponse = JSON.parse(message.body);
                     setBids(data.bids || []);
                     setAsks(data.asks || []);
                     if (data.lastPrice) setLastPrice(data.lastPrice);
                 }
-            });;
+            });
 
             // request snapshot
             stompClient.publish({
@@ -58,7 +59,7 @@ export default function OrderBook() {
                             className="flex justify-between text-sm font-mono text-green-900"
                         >
                             <span>{order.price.toFixed(2)}</span>
-                            <span>{order.lot}</span>
+                            <span>{order.totalLot}</span>
                         </div>
                     ))}
                 </div>
@@ -82,7 +83,7 @@ export default function OrderBook() {
                             className="flex justify-between text-sm font-mono text-red-900"
                         >
                             <span>{order.price.toFixed(2)}</span>
-                            <span>{order.lot}</span>
+                            <span>{order.totalLot}</span>
                         </div>
                     ))}
                 </div>
