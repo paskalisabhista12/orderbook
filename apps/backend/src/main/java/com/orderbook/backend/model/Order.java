@@ -1,16 +1,20 @@
 package com.orderbook.backend.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Order {
+    private double price;
+    private int lot;
+    private Side side;
+    private long timestamp; // for FIFO
+    
     public enum Side { BUY, SELL }
     
-    private Side side;
-    private int price;
-    private int lot;
+    public Order(double price, int lot, Side side) {
+        this.price = price;
+        this.lot = lot;
+        this.side = side;
+        this.timestamp = System.nanoTime(); // high-resolution time for ordering
+    }
 }

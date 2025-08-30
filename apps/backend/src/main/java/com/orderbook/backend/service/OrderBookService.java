@@ -13,9 +13,24 @@ import java.util.PriorityQueue;
 public class OrderBookService {
     
     private final PriorityQueue<Order> buyOrders = new PriorityQueue<>(
-            (o1, o2) -> Double.compare(o2.getPrice(), o1.getPrice()));
+            (o1, o2) -> {
+                int cmp = Double.compare(o2.getPrice(), o1.getPrice());
+                if (cmp == 0) {
+                    return Long.compare(o1.getTimestamp(), o2.getTimestamp());
+                }
+                return cmp;
+            }
+    );
     
-    private final PriorityQueue<Order> sellOrders = new PriorityQueue<>(Comparator.comparingDouble(Order::getPrice));
+    private final PriorityQueue<Order> sellOrders = new PriorityQueue<>(
+            (o1, o2) -> {
+                int cmp = Double.compare(o1.getPrice(), o2.getPrice());
+                if (cmp == 0) {
+                    return Long.compare(o1.getTimestamp(), o2.getTimestamp());
+                }
+                return cmp;
+            }
+    );
     
     public synchronized void addOrder(Order order) {
         if (order.getSide() == Order.Side.BUY) {
@@ -31,14 +46,27 @@ public class OrderBookService {
             Order bestBuy = buyOrders.peek();
             Order bestSell = sellOrders.peek();
             
-            if (bestBuy.getPrice() >= bestSell.getPrice()) {
-                int tradedQty = Math.min(bestBuy.getLot(), bestSell.getLot());
-                System.out.printf("Trade executed: %d @ %d", tradedQty, bestSell.getPrice());
-                
-                buyOrders.poll();
-                sellOrders.poll();
-            } else {
+            // No match possible
+            if (bestBuy.getPrice() < bestSell.getPrice()) {
                 break;
+            }
+            
+            // Match found
+            int tradedQty = Math.min(bestBuy.getLot(), bestSell.getLot());
+            double tradePrice = bestSell.getPrice(); // Usually last trade price = taker's price or ask price
+            
+            System.out.printf("Trade executed: %d @ %.2f%n", tradedQty, tradePrice);
+            
+            // Update quantities
+            bestBuy.setLot(bestBuy.getLot() - tradedQty);
+            bestSell.setLot(bestSell.getLot() - tradedQty);
+            
+            // Remove orders that are fully filled
+            if (bestBuy.getLot() == 0) {
+                buyOrders.poll();
+            }
+            if (bestSell.getLot() == 0) {
+                sellOrders.poll();
             }
         }
     }

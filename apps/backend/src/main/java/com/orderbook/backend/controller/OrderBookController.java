@@ -21,5 +21,11 @@ public class OrderBookController {
         orderBookService.addOrder(order);
         return orderBookService.getSnapshot(); // broadcast full book
     }
+    
+    @MessageMapping("/snapshot")
+    @SendTo("/topic/orderbook")
+    public OrderBookSnapshot snapshot() {
+        return orderBookService.getSnapshot();
+    }
 }
 
