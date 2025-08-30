@@ -1,6 +1,6 @@
 package com.orderbook.backend.controller;
+import com.orderbook.backend.dto.OrderBookResponse;
 import com.orderbook.backend.model.Order;
-import com.orderbook.backend.model.OrderBookSnapshot;
 import com.orderbook.backend.service.OrderBookService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -17,14 +17,14 @@ public class OrderBookController {
     
     @MessageMapping("/order")
     @SendTo("/topic/orderbook")
-    public OrderBookSnapshot handleNewOrder(Order order) {
+    public OrderBookResponse handleNewOrder(Order order) {
         orderBookService.addOrder(order);
         return orderBookService.getSnapshot(); // broadcast full book
     }
     
     @MessageMapping("/snapshot")
     @SendTo("/topic/orderbook")
-    public OrderBookSnapshot snapshot() {
+    public OrderBookResponse snapshot() {
         return orderBookService.getSnapshot();
     }
 }

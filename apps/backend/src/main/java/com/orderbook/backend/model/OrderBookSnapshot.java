@@ -1,13 +1,11 @@
 package com.orderbook.backend.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
-import java.util.List;
-
-@Data
+@Getter
 @AllArgsConstructor
 public class OrderBookSnapshot {
-    private List<Order> bids;
-    private List<Order> asks;
+    private double price;
+    private int totalLot;
 }

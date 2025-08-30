@@ -1,12 +1,11 @@
 package com.orderbook.backend.service;
+import com.orderbook.backend.dto.OrderBookResponse;
 import com.orderbook.backend.model.Order;
 import com.orderbook.backend.model.OrderBookSnapshot;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.PriorityQueue;
+import java.util.*;
 
 @Service
 @Getter
@@ -71,10 +70,43 @@ public class OrderBookService {
         }
     }
     
-    public OrderBookSnapshot getSnapshot() {
-        return new OrderBookSnapshot(
-                new ArrayList<>(buyOrders),
-                new ArrayList<>(sellOrders)
-        );
+    /**
+     * Returns aggregated snapshot for buy side
+     */
+    public List<OrderBookSnapshot> getBidSnapshot() {
+        return aggregateOrders(buyOrders, true);
     }
+    
+    /**
+     * Returns aggregated snapshot for sell side
+     */
+    public List<OrderBookSnapshot> getAskSnapshot() {
+        return aggregateOrders(sellOrders, false);
+    }
+    
+    private List<OrderBookSnapshot> aggregateOrders(PriorityQueue<Order> queue, boolean isBid) {
+        Map<Double, Integer> aggregation = new HashMap<>();
+        
+        for (Order order : queue) {
+            aggregation.merge(order.getPrice(), order.getLot(), Integer::sum);
+        }
+        
+        return aggregation.entrySet().stream()
+                .map(e -> new OrderBookSnapshot(e.getKey(), e.getValue()))
+                .sorted((s1, s2) -> {
+                    if (isBid) {
+                        return Double.compare(s2.getPrice(), s1.getPrice()); // highest first
+                    } else {
+                        return Double.compare(s1.getPrice(), s2.getPrice()); // lowest first
+                    }
+                })
+                .toList();
+    }
+    
+    public OrderBookResponse getSnapshot() {
+        List<OrderBookSnapshot> bids = getBidSnapshot();
+        List<OrderBookSnapshot> asks = getAskSnapshot();
+        return new OrderBookResponse(bids, asks);
+    }
+    
 }
