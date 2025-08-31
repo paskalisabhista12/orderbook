@@ -3,6 +3,7 @@
 import GenerateOrderButton from "@/components/GenerateOrderButton";
 import OrderBook from "@/components/OrderBook";
 import OrderForm from "@/components/OrderForm";
+import RunningTrade from "@/components/RunningTrade";
 import { Side } from "@/utils/types";
 import { useState } from "react";
 
@@ -26,6 +27,7 @@ export default function Home() {
                     setLot={setLot}
                 />
             </div>
+            <RunningTrade />
         </main>
     );
 }
