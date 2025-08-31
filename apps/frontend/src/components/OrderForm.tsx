@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { getStompClient } from "@/utils/stompClient";
 import { Order, Side } from "@/utils/types";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { submitOrder } from "@/api/orderApi";
+import toast from "react-hot-toast";
 
 type OrderFormProps = {
     side: Side;
@@ -21,26 +21,26 @@ export default function OrderForm({
     lot,
     setLot,
 }: OrderFormProps) {
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const order: Order = {
+        const payload: Order = {
             side,
-            price: parseInt(price),
+            price: parseInt(price, 10),
             lot: parseInt(lot, 10),
         };
 
-        const client = getStompClient();
-
-        if (client && client.connected) {
-            client.publish({
-                destination: "/app/order",
-                body: JSON.stringify(order),
-            });
+        try {
+            await submitOrder(payload);
             setPrice("");
             setLot("");
-        } else {
-            alert("❌ Not connected to server");
+        } catch (err: any) {
+            if (err.response) {
+                toast.error("❌ Failed: " + err.response.data.message);
+            } else {
+                toast.error("❌ Network error");
+            }
+            console.error("Order submission error:", err);
         }
     };
 
