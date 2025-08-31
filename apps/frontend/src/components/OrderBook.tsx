@@ -18,6 +18,7 @@ interface Order {
 interface OrderBookResponse {
     bids: Order[];
     asks: Order[];
+    ticker: string;
     lastPrice?: number;
     prev?: number;
     change?: number;
@@ -68,6 +69,7 @@ export default function OrderBook({ setPrice }: OrderFormProps) {
             {/* Header */}
             {summary && (
                 <QuoteSummary
+                    ticker={summary.ticker ?? ""}
                     prev={summary.open ?? 0}
                     change={summary.change ?? 0}
                     percent={summary.percent ?? 0}

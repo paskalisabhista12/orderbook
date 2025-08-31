@@ -1,6 +1,7 @@
 "use client";
 
 type QuoteSummaryProps = {
+    ticker: string;
     prev: number;
     change: number;
     percent: number;
@@ -14,6 +15,7 @@ type QuoteSummaryProps = {
 };
 
 export default function QuoteSummary({
+    ticker,
     prev,
     change,
     percent,
@@ -25,7 +27,7 @@ export default function QuoteSummary({
     val,
     freq,
 }: QuoteSummaryProps) {
-    // Pick color depending on change
+    // Color depending on change
     const changeColor =
         change > 0
             ? "text-green-500"
@@ -37,14 +39,18 @@ export default function QuoteSummary({
         <div className="bg-black text-white font-mono text-sm rounded-lg shadow p-4 grid grid-cols-2 gap-y-2 gap-x-8 w-full">
             {/* Left Column */}
             <div className="flex justify-between">
+                <span className="text-gray-400">Ticker</span>
+                <span className="text-yellow-400 font-bold">{ticker}</span>
+            </div>
+            <div className="flex justify-between">
                 <span className="text-gray-400">Prv</span>
-                <span className="text-yellow-400 font-bold">
+                <span className="text-gray-200 font-bold">
                     {prev.toLocaleString()}
                 </span>
             </div>
             <div className="flex justify-between">
                 <span className="text-gray-400">Open</span>
-                <span className="text-red-500 font-bold">
+                <span className={`${changeColor} font-bold`}>
                     {open.toLocaleString()}
                 </span>
             </div>
@@ -57,7 +63,9 @@ export default function QuoteSummary({
             </div>
             <div className="flex justify-between">
                 <span className="text-gray-400">High</span>
-                <span className="text-red-500">{high.toLocaleString()}</span>
+                <span className={`${changeColor}`}>
+                    {high.toLocaleString()}
+                </span>
             </div>
 
             <div className="flex justify-between">
@@ -71,13 +79,15 @@ export default function QuoteSummary({
             </div>
             <div className="flex justify-between">
                 <span className="text-gray-400">Low</span>
-                <span className="text-red-500">{low.toLocaleString()}</span>
+                <span className={`${changeColor}`}>{low.toLocaleString()}</span>
             </div>
 
             {/* Right Column */}
             <div className="flex justify-between">
                 <span className="text-gray-400">Last</span>
-                <span className="font-bold">{lastPrice.toLocaleString()}</span>
+                <span className={`${changeColor} font-extrabold`}>
+                    {lastPrice.toLocaleString()}
+                </span>
             </div>
             <div className="flex justify-between">
                 <span className="text-gray-400">Lot</span>
