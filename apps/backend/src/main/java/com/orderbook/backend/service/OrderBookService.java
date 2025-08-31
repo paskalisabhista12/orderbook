@@ -35,6 +35,19 @@ public class OrderBookService {
         return cmp;
     });
     
+    private final String ticker = "BMRI";
+    
+    // Market stats
+    private final int prev = 4730; // assume yesterday’s close (in real app, load from DB)
+    private int open = prev;
+    private int high = open;
+    private int low = open;
+    private int lastPrice = open;
+    
+    private long totalLot = 0;   // accumulated traded volume
+    private long totalValue = 0; // accumulated traded value
+    private long totalFreq = 0;  // number of trades
+    
     public synchronized void addOrder(Order order) {
         if (order.getSide() == Order.Side.BUY) {
             buyOrders.offer(order);
@@ -49,33 +62,50 @@ public class OrderBookService {
             Order bestBuy = buyOrders.peek();
             Order bestSell = sellOrders.peek();
             
-            // No match possible
+            // no crossing -> stop
             if (bestBuy.getPrice() < bestSell.getPrice()) {
                 break;
             }
             
-            // Match found
             int tradedQty = Math.min(bestBuy.getLot(),
                     bestSell.getLot());
-            double tradePrice = bestSell.getPrice(); // Usually last trade price = taker's price or ask price
             
-            System.out.printf("Trade executed: %d @ %.2f%n",
-                    tradedQty,
-                    tradePrice);
+            // Use resting order’s price
+            int tradePrice;
+            if (bestBuy.getTimestamp() < bestSell.getTimestamp()) {
+                tradePrice = bestBuy.getPrice();
+            } else {
+                tradePrice = bestSell.getPrice();
+            }
             
-            // Update quantities
+            // Update OHLC
+            if (totalFreq == 0) { // first trade
+                this.open = tradePrice;
+                this.high = tradePrice;
+                this.low = tradePrice;
+            }
+            this.lastPrice = tradePrice;
+            if (tradePrice > this.high)
+                this.high = tradePrice;
+            if (tradePrice < this.low)
+                this.low = tradePrice;
+            
+            // Market stats
+            this.totalLot += tradedQty;
+            this.totalValue += (long) tradedQty * tradePrice * 100;
+            this.totalFreq++;
+            
+            // Adjust orders
             bestBuy.setLot(bestBuy.getLot() - tradedQty);
             bestSell.setLot(bestSell.getLot() - tradedQty);
             
-            // Remove orders that are fully filled
-            if (bestBuy.getLot() == 0) {
+            if (bestBuy.getLot() == 0)
                 buyOrders.poll();
-            }
-            if (bestSell.getLot() == 0) {
+            if (bestSell.getLot() == 0)
                 sellOrders.poll();
-            }
         }
     }
+    
     
     /**
      * Returns aggregated snapshot for buy side
@@ -95,7 +125,7 @@ public class OrderBookService {
     
     private List<OrderBookSnapshot> aggregateOrders(PriorityQueue<Order> queue, boolean isBid) {
         // price -> [totalLot, freq]
-        Map<Double, int[]> aggregation = new HashMap<>();
+        Map<Integer, int[]> aggregation = new HashMap<>();
         
         for (Order order : queue) {
             aggregation.compute(order.getPrice(),
@@ -103,8 +133,8 @@ public class OrderBookService {
                         if (arr == null) {
                             return new int[]{order.getLot(), 1}; // lot, freq
                         } else {
-                            arr[0] += order.getLot(); // accumulate lot
-                            arr[1] += 1;              // count freq
+                            arr[0] += order.getLot();
+                            arr[1] += 1;
                             return arr;
                         }
                     });
@@ -118,10 +148,10 @@ public class OrderBookService {
                 .sorted((s1, s2) -> {
                     if (isBid) {
                         return Double.compare(s2.getPrice(),
-                                s1.getPrice()); // highest first
+                                s1.getPrice());
                     } else {
                         return Double.compare(s1.getPrice(),
-                                s2.getPrice()); // lowest first
+                                s2.getPrice());
                     }
                 })
                 .toList();
@@ -130,8 +160,52 @@ public class OrderBookService {
     public OrderBookResponse getSnapshot() {
         List<OrderBookSnapshot> bids = getBidSnapshot();
         List<OrderBookSnapshot> asks = getAskSnapshot();
-        return new OrderBookResponse(bids,
+        
+        int change = this.lastPrice - this.prev;
+        double percent = (this.prev != 0) ? (change * 100.0 / this.prev) : 0.0;
+        
+        return new OrderBookResponse(this.prev,
+                change,
+                percent,
+                this.open,
+                this.high,
+                this.low,
+                this.lastPrice,
+                formatLot(this.totalLot),
+                formatValue(this.totalValue),
+                formatFreq(this.totalFreq),
+                bids,
                 asks);
     }
     
+    // Helpers for formatting
+    private String formatLot(long lot) {
+        if (lot >= 1_000_000)
+            return String.format("%.2f M",
+                    lot / 1_000_000.0);
+        if (lot >= 1_000)
+            return String.format("%.2f K",
+                    lot / 1_000.0);
+        return String.valueOf(lot);
+    }
+    
+    private String formatValue(long value) {
+        if (value >= 1_000_000_000)
+            return String.format("%.2f B",
+                    value / 1_000_000_000.0);
+        if (value >= 1_000_000)
+            return String.format("%.2f M",
+                    value / 1_000_000.0);
+        if (value >= 1_000)
+            return String.format("%.2f K",
+                    value / 1_000.0);
+        return String.valueOf(value);
+    }
+    
+    private String formatFreq(long freq) {
+        if (freq >= 1_000)
+            return String.format("%.2f K",
+                    freq / 1_000.0);
+        return String.valueOf(freq);
+    }
 }
