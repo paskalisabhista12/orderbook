@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class OrderBookResponse {
+    private String ticker;
     private int prev;       // previous close price
     private int change;     // price change (lastPrice - prev)
     private double percent; // percentage change

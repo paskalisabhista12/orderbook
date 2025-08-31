@@ -7,10 +7,7 @@ import com.orderbook.backend.utils.IDXPriceValidator;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 @Service
 @Getter
@@ -91,12 +88,6 @@ public class OrderBookService {
                 tradePrice = bestSell.getPrice();
             }
             
-            // Update OHLC
-            if (totalFreq == 0) { // first trade
-                this.open = tradePrice;
-                this.high = tradePrice;
-                this.low = tradePrice;
-            }
             this.lastPrice = tradePrice;
             if (tradePrice > this.high)
                 this.high = tradePrice;
@@ -170,6 +161,37 @@ public class OrderBookService {
                 .toList();
     }
     
+    public OrderBookResponse fillRandomOrderBook(int depth) {
+        Random random = new Random();
+        int lastPrice = this.lastPrice;
+        int tick = getTickSize(lastPrice);
+        
+        // Generate bids (below lastPrice)
+        for (int i = depth; i > 0; i--) {
+            int price = lastPrice - i * tick;
+            if (price > 0) {
+                Order bid = new Order();
+                bid.setSide(Order.Side.valueOf("BUY"));
+                bid.setPrice(price);
+                bid.setLot(random.nextInt(50) + 1); // 1–50 lots
+                buyOrders.offer(bid);
+            }
+        }
+        
+        // Generate asks (above lastPrice)
+        for (int i = 1; i <= depth; i++) {
+            int price = lastPrice + i * tick;
+            Order ask = new Order();
+            ask.setSide(Order.Side.valueOf("SELL"));
+            ask.setPrice(price);
+            ask.setLot(random.nextInt(50) + 1);
+            sellOrders.offer(ask);
+        }
+        
+        return this.getSnapshot();
+    }
+    
+    
     public OrderBookResponse getSnapshot() {
         List<OrderBookSnapshot> bids = getBidSnapshot();
         List<OrderBookSnapshot> asks = getAskSnapshot();
@@ -177,7 +199,8 @@ public class OrderBookService {
         int change = this.lastPrice - this.prev;
         double percent = (this.prev != 0) ? (change * 100.0 / this.prev) : 0.0;
         
-        return new OrderBookResponse(this.prev,
+        return new OrderBookResponse(this.ticker,
+                this.prev,
                 change,
                 percent,
                 this.open,
@@ -221,4 +244,19 @@ public class OrderBookService {
                     freq / 1_000.0);
         return String.valueOf(freq);
     }
+    
+    private int getTickSize(int price) {
+        if (price < 200)
+            return 1;
+        if (price < 500)
+            return 2;
+        if (price < 2000)
+            return 5;
+        if (price < 5000)
+            return 10;
+        if (price < 10000)
+            return 25;
+        return 50;
+    }
+    
 }

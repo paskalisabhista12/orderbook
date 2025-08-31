@@ -1,7 +1,9 @@
 package com.orderbook.backend.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 @Data
 public class Order {
     private int price;

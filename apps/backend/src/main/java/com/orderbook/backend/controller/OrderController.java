@@ -36,5 +36,15 @@ public class OrderController {
         // Return HTTP response
         return ResponseEntity.ok(snapshot);
     }
+    
+    @PostMapping("/random-generate")
+    public ResponseEntity<OrderBookResponse> generateRandomOrderBook() {
+        OrderBookResponse snapshot = orderBookService.fillRandomOrderBook(5);
+        System.out.println("HERE");
+        // ✅ notify websocket subscribers too
+        messagingTemplate.convertAndSend("/topic/orderbook", snapshot);
+        
+        return ResponseEntity.ok(snapshot);
+    }
 }
 
