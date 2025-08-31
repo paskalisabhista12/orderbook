@@ -16,13 +16,6 @@ public class OrderBookController {
         this.orderBookService = orderBookService;
     }
     
-    @MessageMapping("/order")
-    @SendTo("/topic/orderbook")
-    public OrderBookResponse handleNewOrder(Order order) {
-        orderBookService.addOrder(order);
-        return orderBookService.getSnapshot(); // broadcast full book
-    }
-    
     @MessageMapping("/snapshot")
     @SendTo("/topic/orderbook")
     public OrderBookResponse snapshot() {

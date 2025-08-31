@@ -3,6 +3,7 @@ package com.orderbook.backend.service;
 import com.orderbook.backend.dto.OrderBookResponse;
 import com.orderbook.backend.model.Order;
 import com.orderbook.backend.model.OrderBookSnapshot;
+import com.orderbook.backend.utils.IDXPriceValidator;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
@@ -49,13 +50,25 @@ public class OrderBookService {
     private long totalFreq = 0;  // number of trades
     
     public synchronized void addOrder(Order order) {
+        int referencePrice;
+        referencePrice = this.prev;
+        
+        // Validate order price before adding
+        if (!IDXPriceValidator.isValidPrice(order.getPrice(),
+                referencePrice)) {
+            throw new IllegalArgumentException("Invalid order price: " + order.getPrice() +
+                    ". Must follow IDX tick size and within daily price limits.");
+        }
+        
         if (order.getSide() == Order.Side.BUY) {
             buyOrders.offer(order);
         } else {
             sellOrders.offer(order);
         }
+        
         matchOrders();
     }
+    
     
     private void matchOrders() {
         while (!buyOrders.isEmpty() && !sellOrders.isEmpty()) {
