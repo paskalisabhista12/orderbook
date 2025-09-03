@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Order, Side } from "@/utils/types";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { submitOrder } from "@/api/orderApi";
@@ -40,7 +42,6 @@ export default function OrderForm({
             } else {
                 toast.error("❌ Network error");
             }
-            console.error("Order submission error:", err);
         }
     };
 

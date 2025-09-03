@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
 import { generateRandomOrder } from "@/api/orderApi";
 
 export default function GenerateOrderButton() {
@@ -10,13 +9,7 @@ export default function GenerateOrderButton() {
     const handleClick = async () => {
         try {
             setLoading(true);
-            const lastPrice = 1520;
-
-            const response = await generateRandomOrder();
-
-            console.log("✅ Random orderbook:", response.data);
-        } catch (err) {
-            console.error("❌ Failed to generate random orderbook", err);
+            await generateRandomOrder();
         } finally {
             setLoading(false);
         }

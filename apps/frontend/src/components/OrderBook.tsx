@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { IMessage } from "@stomp/stompjs";
-import { getStompClient } from "@/utils/stompClient";
 import QuoteSummary from "./QuoteSummary";
 import { useStompClient } from "@/utils/useStompClient";
 
