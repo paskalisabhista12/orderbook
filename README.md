@@ -27,7 +27,7 @@ It simulates how buy and sell orders are placed, matched, and updated in real ti
 
 ### 1. Clone Repository
 ```bash
-git clone [https://github.com/paskalisabhista12/orderbook.git](https://github.com/paskalisabhista12/orderbook.git)
+git clone https://github.com/paskalisabhista12/orderbook.git
 cd orderbook
 ```
 ### 2. Run with Docker
