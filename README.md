@@ -1,6 +1,6 @@
 # 📈 Orderbook
 
-This project is a demonstration of a **stock trading orderbook system** inspired by the **Indonesia Stock Exchange (IDX)**.  
+This project is a demonstration of a **stock trading orderbook system**
 It simulates how buy and sell orders are placed, matched, and updated in real time.
 
 ---
