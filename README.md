@@ -17,7 +17,6 @@ It simulates how buy and sell orders are placed, matched, and updated in real ti
 ## 🛠️ Tech Stack
 - **Backend**: Spring Boot (Java)
 - **Frontend**: Next.js + Tailwind CSS
-- **Database**: PostgreSQL
 - **Messaging**: WebSocket (STOMP)
 - **Containerization**: Docker & Docker Compose
 
