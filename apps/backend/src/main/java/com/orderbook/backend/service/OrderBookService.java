@@ -3,8 +3,12 @@ package com.orderbook.backend.service;
 import com.orderbook.backend.dto.OrderBookResponse;
 import com.orderbook.backend.model.Order;
 import com.orderbook.backend.model.OrderBookSnapshot;
+import com.orderbook.backend.model.Side;
+import com.orderbook.backend.model.TradeEvent;
 import com.orderbook.backend.utils.IDXPriceValidator;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -13,6 +17,7 @@ import java.util.*;
 @Getter
 public class OrderBookService {
     
+    private static final int MAX_TRADES = 100;
     private final PriorityQueue<Order> buyOrders = new PriorityQueue<>((o1, o2) -> {
         int cmp = Double.compare(o2.getPrice(),
                 o1.getPrice());
@@ -22,7 +27,6 @@ public class OrderBookService {
         }
         return cmp;
     });
-    
     private final PriorityQueue<Order> sellOrders = new PriorityQueue<>((o1, o2) -> {
         int cmp = Double.compare(o1.getPrice(),
                 o2.getPrice());
@@ -32,9 +36,9 @@ public class OrderBookService {
         }
         return cmp;
     });
-    
+    // Keep last 100 trades (newest first)
+    private final Deque<TradeEvent> tradeHistory = new LinkedList<>();
     private final String ticker = "BMRI";
-    
     // Market stats
     private final int prev = 4730; // assume yesterday’s close (in real app, load from DB)
     private int open = prev;
@@ -45,6 +49,9 @@ public class OrderBookService {
     private long totalLot = 0;   // accumulated traded volume
     private long totalValue = 0; // accumulated traded value
     private long totalFreq = 0;  // number of trades
+    
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     
     public synchronized void addOrder(Order order) {
         int referencePrice;
@@ -57,17 +64,17 @@ public class OrderBookService {
                     ". Must follow IDX tick size and within daily price limits.");
         }
         
-        if (order.getSide() == Order.Side.BUY) {
+        if (order.getSide() == Side.BUY) {
             buyOrders.offer(order);
         } else {
             sellOrders.offer(order);
         }
         
-        matchOrders();
+        matchOrders(order.getSide());
     }
     
     
-    private void matchOrders() {
+    private void matchOrders(Side side) {
         while (!buyOrders.isEmpty() && !sellOrders.isEmpty()) {
             Order bestBuy = buyOrders.peek();
             Order bestSell = sellOrders.peek();
@@ -87,6 +94,10 @@ public class OrderBookService {
             } else {
                 tradePrice = bestSell.getPrice();
             }
+            
+            executeTrade(side,
+                    tradedQty,
+                    tradePrice);
             
             this.lastPrice = tradePrice;
             if (tradePrice > this.high)
@@ -171,7 +182,7 @@ public class OrderBookService {
             int price = lastPrice - i * tick;
             if (price > 0) {
                 Order bid = new Order();
-                bid.setSide(Order.Side.valueOf("BUY"));
+                bid.setSide(Side.valueOf("BUY"));
                 bid.setPrice(price);
                 bid.setLot(random.nextInt(50) + 1); // 1–50 lots
                 buyOrders.offer(bid);
@@ -182,7 +193,7 @@ public class OrderBookService {
         for (int i = 1; i <= depth; i++) {
             int price = lastPrice + i * tick;
             Order ask = new Order();
-            ask.setSide(Order.Side.valueOf("SELL"));
+            ask.setSide(Side.valueOf("SELL"));
             ask.setPrice(price);
             ask.setLot(random.nextInt(50) + 1);
             sellOrders.offer(ask);
@@ -258,5 +269,39 @@ public class OrderBookService {
             return 25;
         return 50;
     }
+    
+    private void executeTrade(Side side, int tradedLot, int tradedPrice) {
+        int change = this.lastPrice - this.prev;
+        double percent = (this.prev != 0) ? (change * 100.0 / this.prev) : 0.0;
+        
+        // Create TradeEvent
+        TradeEvent tradeEvent = new TradeEvent(tradedPrice,
+                tradedLot,
+                side,
+                System.currentTimeMillis(),
+                this.ticker,
+                change,
+                percent);
+        
+        
+        // Save trade to history
+        synchronized (tradeHistory) {
+            tradeHistory.addFirst(tradeEvent); // newest first
+            if (tradeHistory.size() > MAX_TRADES) {
+                tradeHistory.removeLast(); // remove oldest
+            }
+        }
+        
+        // Send to WebSocket subscribers
+        messagingTemplate.convertAndSend("/topic/trades",
+                tradeEvent);
+    }
+    
+    public List<TradeEvent> getRecentTrades() {
+        synchronized (tradeHistory) {
+            return new ArrayList<>(tradeHistory);
+        }
+    }
+    
     
 }

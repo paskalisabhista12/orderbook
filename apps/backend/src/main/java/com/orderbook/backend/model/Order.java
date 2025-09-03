@@ -18,5 +18,4 @@ public class Order {
         this.timestamp = System.nanoTime(); // high-resolution time for ordering
     }
     
-    public enum Side {BUY, SELL}
 }
