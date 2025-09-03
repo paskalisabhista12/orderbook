@@ -1,64 +1,129 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
-import { getStompClient } from "@/utils/stompClient";
+import { useStompClient } from "@/utils/useStompClient";
 
 type TradeEvent = {
+    ticker: string;
     price: number;
     lot: number;
+    change: number;
+    percent: number;
     side: "BUY" | "SELL";
     timestamp: number;
 };
 
 export default function RunningTrade() {
     const [trades, setTrades] = useState<TradeEvent[]>([]);
+    const { client, connected } = useStompClient();
 
     useEffect(() => {
-        const stompClient = getStompClient();
+        if (!client || !connected) return;
 
-        stompClient.onConnect = () => {
-            console.log("Connected to /ws ✅");
-            stompClient.subscribe("/topic/trades", (message) => {
-                const trade: TradeEvent = JSON.parse(message.body);
+        const tradeSub = client.subscribe("/topic/trades", (message) => {
+            const trade: TradeEvent = JSON.parse(message.body);
+            setTrades((prev) => [trade, ...prev].slice(0, 100));
+        });
 
-                setTrades((prev) => [trade, ...prev]);
-            });
-        };
+        const snapshotSub = client.subscribe(
+            "/topic/trades/snapshot",
+            (message) => {
+                const history: TradeEvent[] = JSON.parse(message.body);
+                setTrades(history);
+            }
+        );
 
-        stompClient.activate();
+        client.publish({ destination: "/app/recent-trades" });
 
         return () => {
-            if (stompClient.active) {
-                stompClient.deactivate();
-            }
+            tradeSub.unsubscribe();
+            snapshotSub.unsubscribe();
         };
-    }, []);
+    }, [client, connected]);
+
+    const formatTime = (ts: number) => {
+        const d = new Date(ts);
+        return d.toLocaleTimeString("en-GB", { hour12: false });
+    };
 
     return (
-        <div className="bg-gray-900 text-white p-4 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-lg font-bold mb-2">Running Trades</h2>
-            <div className="space-y-1 max-h-64 overflow-y-auto">
-                {trades.length === 0 ? (
-                    <p className="text-gray-500">No trades yet</p>
-                ) : (
-                    trades.map((trade, index) => (
-                        <div
-                            key={index}
-                            className={`flex justify-between p-2 rounded ${
-                                trade.side === "BUY"
-                                    ? "bg-green-700"
-                                    : "bg-red-700"
-                            }`}
-                        >
-                            <span>{trade.side}</span>
-                            <span>
-                                {trade.lot} @ {trade.price.toLocaleString()}
-                            </span>
-                        </div>
-                    ))
-                )}
+        <div className="bg-gray-900 text-white rounded-lg shadow-lg w-full max-w-5xl mx-auto p-2 font-mono">
+            {/* Table */}
+            <div className="overflow-y-auto max-h-[600px] border border-gray-700 rounded">
+                <table className="w-full text-sm">
+                    <thead className="bg-gray-800 text-gray-300 sticky top-0">
+                        <tr>
+                            <th className="px-2 py-1 text-left">Time</th>
+                            <th className="px-2 py-1 text-left">Ticker</th>
+                            <th className="px-2 py-1 text-right">Price</th>
+                            <th className="px-2 py-1 text-right">Lot</th>
+                            <th className="px-2 py-1 text-right">Change</th>
+                            <th className="px-2 py-1 text-right">%</th>
+                            <th className="px-2 py-1 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {trades.length === 0 ? (
+                            <tr>
+                                <td
+                                    colSpan={7}
+                                    className="text-center text-gray-500 py-4"
+                                >
+                                    No trades yet
+                                </td>
+                            </tr>
+                        ) : (
+                            trades.map((trade, index) => (
+                                <tr
+                                    key={index}
+                                    className="border-b border-gray-800"
+                                >
+                                    <td className="px-2 py-1">
+                                        {formatTime(trade.timestamp)}
+                                    </td>
+                                    <td className="px-2 py-1">
+                                        {trade.ticker}
+                                    </td>
+                                    <td className="px-2 py-1 text-right">
+                                        {trade.price.toLocaleString()}
+                                    </td>
+                                    <td className="px-2 py-1 text-right">
+                                        {trade.lot}
+                                    </td>
+                                    <td
+                                        className={`px-2 py-1 text-right ${
+                                            trade.change >= 0
+                                                ? "text-green-400"
+                                                : "text-red-400"
+                                        }`}
+                                    >
+                                        {trade.change}
+                                    </td>
+                                    <td
+                                        className={`px-2 py-1 text-right ${
+                                            trade.percent >= 0
+                                                ? "text-green-400"
+                                                : "text-red-400"
+                                        }`}
+                                    >
+                                        {trade.percent &&
+                                            trade.percent.toFixed(2)}
+                                        %
+                                    </td>
+                                    <td
+                                        className={`px-2 py-1 text-center font-bold ${
+                                            trade.side === "BUY"
+                                                ? "text-green-400"
+                                                : "text-red-400"
+                                        }`}
+                                    >
+                                        {trade.side === "BUY" ? "Buy" : "Sell"}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

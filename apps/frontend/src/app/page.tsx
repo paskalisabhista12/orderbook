@@ -12,12 +12,10 @@ export default function Home() {
     const [price, setPrice] = useState<string>("");
     const [lot, setLot] = useState<string>("");
     return (
-        <main className="min-h-screen flex items-center justify-center gap-10 bg-gray-100">
-            <div className="flex flex-col gap-10 w-fit">
+        <main className="min-h-screen flex items-center justify-center gap-10 bg-gray-100 p-10">
+            <div className="flex flex-col items-center gap-10 w-full">
                 <GenerateOrderButton />
                 <OrderBook setPrice={setPrice} />
-            </div>
-            <div className="flex flex-col gap-10 w-fit">
                 <OrderForm
                     side={side}
                     setSide={setSide}
@@ -26,6 +24,9 @@ export default function Home() {
                     lot={lot}
                     setLot={setLot}
                 />
+            </div>
+            <div className="flex flex-col gap-10 w-fit">
+                
             </div>
             <RunningTrade />
         </main>

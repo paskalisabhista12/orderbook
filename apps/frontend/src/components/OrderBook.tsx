@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { IMessage } from "@stomp/stompjs";
 import { getStompClient } from "@/utils/stompClient";
 import QuoteSummary from "./QuoteSummary";
+import { useStompClient } from "@/utils/useStompClient";
 
 type OrderFormProps = {
     setPrice: (price: string) => void;
@@ -36,32 +37,24 @@ export default function OrderBook({ setPrice }: OrderFormProps) {
     const [asks, setAsks] = useState<Order[]>([]);
     const [summary, setSummary] = useState<OrderBookResponse | null>(null);
 
+    const { client, connected } = useStompClient();
+
     useEffect(() => {
-        const stompClient = getStompClient();
+        if (!client || !connected) return;
 
-        stompClient.onConnect = () => {
-            console.log("✅ Connected to backend");
+        const sub = client.subscribe("/topic/orderbook", (msg: IMessage) => {
+            const data = JSON.parse(msg.body);
+            setBids(data.bids || []);
+            setAsks(data.asks || []);
+            setSummary(data);
+        });
 
-            // subscribe to updates
-            stompClient.subscribe("/topic/orderbook", (message: IMessage) => {
-                if (message.body) {
-                    const data: OrderBookResponse = JSON.parse(message.body);
-                    setBids(data.bids || []);
-                    setAsks(data.asks || []);
-                    setSummary(data); // <-- update summary state
-                }
-            });
+        client.publish({
+            destination: "/app/snapshot",
+        });
 
-            // request snapshot
-            stompClient.publish({
-                destination: "/app/snapshot",
-            });
-        };
-
-        return () => {
-            stompClient.deactivate();
-        };
-    }, []);
+        return () => sub.unsubscribe();
+    }, [client, connected]);
 
     const nf = new Intl.NumberFormat("en-US");
     return (

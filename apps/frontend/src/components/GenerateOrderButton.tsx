@@ -10,13 +10,11 @@ export default function GenerateOrderButton() {
     const handleClick = async () => {
         try {
             setLoading(true);
-            // Example lastPrice input
             const lastPrice = 1520;
 
             const response = await generateRandomOrder();
 
             console.log("✅ Random orderbook:", response.data);
-            // You can store it in state and render in UI
         } catch (err) {
             console.error("❌ Failed to generate random orderbook", err);
         } finally {
