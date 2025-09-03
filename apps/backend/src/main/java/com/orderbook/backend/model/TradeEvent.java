@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class TradeEvent {
     private int price;
     private int lot;
-    private Side side;git
+    private Side side;
     private long timestamp;
     private String ticker;
     private int change;
