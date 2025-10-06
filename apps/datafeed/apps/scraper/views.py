@@ -138,5 +138,3 @@ def fetch_price(request):
         },
         status=status.HTTP_201_CREATED,
     )
-
-

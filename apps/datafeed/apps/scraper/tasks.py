@@ -45,7 +45,7 @@ def fetch_stock_data(ticker: str) -> None:
         logger.error(f"❌ Error fetching data for {ticker}: {e}")
 
 
-def fetch_price_history(ticker, period="1mo", interval="1d"):
+def fetch_price_history(ticker, period="1mo", interval="1d") -> None:
     try:
         company = Company.objects.get(ticker=ticker)  # May throw not found exception
         ticker_symbol = yf.Ticker(f"{ticker}.JK")
