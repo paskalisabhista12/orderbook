@@ -1,6 +1,8 @@
+from datetime import datetime, timezone
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from .models import Company
+from django.db import IntegrityError
+from .models import Company, PriceHistory
 import yfinance as yf
 
 logger = get_task_logger(__name__)
@@ -10,6 +12,7 @@ logger = get_task_logger(__name__)
 def batch_fetch_stock_data(tickers):
     for ticker in tickers:
         fetch_stock_data(ticker)
+        fetch_price_history(ticker=ticker)
 
     return f"Processed {tickers}"
 
@@ -40,3 +43,33 @@ def fetch_stock_data(ticker: str) -> None:
 
     except Exception as e:
         logger.error(f"❌ Error fetching data for {ticker}: {e}")
+
+
+def fetch_price_history(ticker, period="1mo", interval="1d"):
+    try:
+        company = Company.objects.get(ticker=ticker)  # May throw not found exception
+        ticker_symbol = yf.Ticker(f"{ticker}.JK")
+        hist = ticker_symbol.history(period=period, interval=interval)
+
+        created_rows = 0
+        for index, row in hist.iterrows():
+            date = datetime.fromtimestamp(index.timestamp(), tz=timezone.utc)
+
+            try:
+                PriceHistory.objects.create(
+                    company=company,
+                    date=date,
+                    open=row["Open"],
+                    high=row["High"],
+                    low=row["Low"],
+                    close=row["Close"],
+                    adj_close=row.get("Adj Close", None),
+                    volume=row["Volume"],
+                )
+                created_rows += 1
+            except IntegrityError:
+                # Skip if (company, date) already exists
+                continue
+        logger.info(f"Fetched {created_rows} new records for {ticker_symbol}")
+    except Exception as e:
+        logger.error(f"❌ Error fetching price history for {ticker}: {e}")

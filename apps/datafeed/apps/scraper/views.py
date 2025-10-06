@@ -1,8 +1,13 @@
+from datetime import datetime, timezone
+from django.db import IntegrityError
 from rest_framework.decorators import api_view
 from playwright.async_api import async_playwright
+from apps.scraper.models import Company, PriceHistory
 from apps.scraper.tasks import batch_fetch_stock_data
 from playwright.async_api import async_playwright
 from rest_framework.response import Response
+from rest_framework import serializers
+from rest_framework import status
 import yfinance as yf
 import asyncio
 import threading
@@ -51,7 +56,9 @@ async def fetch_tickers():
                         texts.append(text.strip())
 
                 print(f"Sending {texts} to scraper.batching_fetch_stock_data")
-                batch_fetch_stock_data.apply_async(args=[texts], queue="scraper.batching_fetch_stock_data")
+                batch_fetch_stock_data.apply_async(
+                    args=[texts], queue="scraper.batching_fetch_stock_data"
+                )
 
                 # If the last page then break, else go to next page
                 if not is_enabled:
@@ -69,23 +76,67 @@ async def fetch_tickers():
             await browser.close()
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def get_tickers(request):
     threading.Thread(target=lambda: asyncio.run(fetch_tickers())).start()
-    return Response({"tickers": "Success send a job"})
+    return Response({"message": "Job sent!"})
+
+
+# Request serializer
+class FetchPriceSerializer(serializers.Serializer):
+    ticker = serializers.CharField(required=True, max_length=20)
+    period = serializers.CharField(default="1mo")
+    interval = serializers.CharField(default="1d")
 
 
 @api_view(["POST"])
-def scrap_company(request):
-    
-    ticker = yf.Ticker("PYFA.JK")
-    info = ticker.info
+def fetch_price(request):
+    serializer = FetchPriceSerializer(data=request.data)
 
-    print("Name:", info.get("longName"))
-    print("Sector:", info.get("sector"))
-    print("Industry:", info.get("industry"))
-    print("Website:", info.get("website"))
-    print("Employees:", info.get("fullTimeEmployees"))
-    print("Summary:", info.get("longBusinessSummary")[:200], "...")
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({"message": "Hello from DRF API"})
+    ticker_symbol = serializer.validated_data["ticker"]
+    period = serializer.validated_data["period"]
+    interval = serializer.validated_data["interval"]
+
+    try:
+        company = Company.objects.get(ticker=ticker_symbol)
+    except Company.DoesNotExist:
+        return Response(
+            {"error": f"Company with ticker {ticker_symbol} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    ticker = yf.Ticker(f"{ticker_symbol}.JK")
+    hist = ticker.history(period=period, interval=interval)
+
+    created_rows = 0
+    for index, row in hist.iterrows():
+        date = datetime.fromtimestamp(index.timestamp(), tz=timezone.utc)
+
+        try:
+            PriceHistory.objects.create(
+                company=company,
+                date=date,
+                open=row["Open"],
+                high=row["High"],
+                low=row["Low"],
+                close=row["Close"],
+                adj_close=row.get("Adj Close", None),
+                volume=row["Volume"],
+            )
+            created_rows += 1
+        except IntegrityError:
+            # Skip if (company, date) already exists
+            continue
+
+    return Response(
+        {
+            "message": f"Fetched {created_rows} new records for {company.name}",
+            "ticker": ticker_symbol,
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+
