@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from django.db import IntegrityError
 from rest_framework.decorators import api_view
 from playwright.async_api import async_playwright
-from apps.scraper.models import Company, PriceHistory
+from apps.core.models import Company, PriceHistory
 from apps.scraper.tasks import batch_fetch_stock_data
 from playwright.async_api import async_playwright
 from rest_framework.response import Response

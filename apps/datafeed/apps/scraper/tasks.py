@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
-from .models import Company, PriceHistory
+from apps.core.models import Company, PriceHistory
 import yfinance as yf
 
 logger = get_task_logger(__name__)
