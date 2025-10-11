@@ -77,7 +77,7 @@ async def fetch_tickers():
 
 
 @api_view(["POST"])
-def get_tickers(request):
+def fetch_ticker(request):
     threading.Thread(target=lambda: asyncio.run(fetch_tickers())).start()
     return Response({"message": "Job sent!"})
 

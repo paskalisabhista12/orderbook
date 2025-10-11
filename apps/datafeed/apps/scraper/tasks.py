@@ -70,6 +70,6 @@ def fetch_price_history(ticker, period="1mo", interval="1d") -> None:
             except IntegrityError:
                 # Skip if (company, date) already exists
                 continue
-        logger.info(f"Fetched {created_rows} new records for {ticker_symbol}")
+        logger.info(f"Fetched {created_rows} new records for {ticker}")
     except Exception as e:
         logger.error(f"❌ Error fetching price history for {ticker}: {e}")
