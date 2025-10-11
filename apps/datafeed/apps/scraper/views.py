@@ -3,9 +3,9 @@ from django.db import IntegrityError
 from rest_framework.decorators import api_view
 from playwright.async_api import async_playwright
 from apps.core.models import Company, PriceHistory
+from apps.core.utils.response_builder import ResponseBuilder
 from apps.scraper.tasks import batch_fetch_stock_data
 from playwright.async_api import async_playwright
-from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
 import yfinance as yf
@@ -79,7 +79,7 @@ async def fetch_tickers():
 @api_view(["POST"])
 def fetch_ticker(request):
     threading.Thread(target=lambda: asyncio.run(fetch_tickers())).start()
-    return Response({"message": "Job sent!"})
+    return ResponseBuilder.create_success_response(message="Job sent!")
 
 
 # Request serializer
@@ -94,8 +94,10 @@ def fetch_price(request):
     serializer = FetchPriceSerializer(data=request.data)
 
     if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return ResponseBuilder.create_error_response(
+            message=serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     ticker_symbol = serializer.validated_data["ticker"]
     period = serializer.validated_data["period"]
     interval = serializer.validated_data["interval"]
@@ -103,8 +105,8 @@ def fetch_price(request):
     try:
         company = Company.objects.get(ticker=ticker_symbol)
     except Company.DoesNotExist:
-        return Response(
-            {"error": f"Company with ticker {ticker_symbol} not found."},
+        return ResponseBuilder.create_error_response(
+            message=f"Company with ticker {ticker_symbol} not found!",
             status=status.HTTP_404_NOT_FOUND,
         )
 
@@ -131,10 +133,7 @@ def fetch_price(request):
             # Skip if (company, date) already exists
             continue
 
-    return Response(
-        {
-            "message": f"Fetched {created_rows} new records for {company.name}",
-            "ticker": ticker_symbol,
-        },
+    return ResponseBuilder.create_success_response(
+        message=f"Fetched {created_rows} new records for {company.name}.",
         status=status.HTTP_201_CREATED,
     )

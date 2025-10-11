@@ -20,5 +20,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path("api/scrap/", include("apps.scraper.urls")),
-    path("api/stock/", include("apps.core.urls")),
+    path("api/core/", include("apps.core.urls")),
 ]
