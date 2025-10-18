@@ -14,7 +14,7 @@ class Company(models.Model):
     def __str__(self):
         return self.ticker
 
-class PriceHistory(models.Model):
+class PriceHistoryD1(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices")
     date = models.DateTimeField()
     open = models.FloatField()

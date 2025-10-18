@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
-from apps.core.models import Company, PriceHistory
+from apps.core.models import Company, PriceHistoryD1
 import yfinance as yf
 
 logger = get_task_logger(__name__)
@@ -56,7 +56,7 @@ def fetch_price_history(ticker, period="1mo", interval="1d") -> None:
             date = datetime.fromtimestamp(index.timestamp(), tz=timezone.utc)
 
             try:
-                PriceHistory.objects.create(
+                PriceHistoryD1.objects.create(
                     company=company,
                     date=date,
                     open=row["Open"],

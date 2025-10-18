@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from django.db import IntegrityError
 from rest_framework.decorators import api_view
 from playwright.async_api import async_playwright
-from apps.core.models import Company, PriceHistory
+from apps.core.models import Company, PriceHistoryD1
 from apps.core.utils.response_builder import ResponseBuilder
 from apps.scraper.tasks import batch_fetch_stock_data
 from playwright.async_api import async_playwright
@@ -118,7 +118,7 @@ def fetch_price(request):
         date = datetime.fromtimestamp(index.timestamp(), tz=timezone.utc)
 
         try:
-            PriceHistory.objects.create(
+            PriceHistoryD1.objects.create(
                 company=company,
                 date=date,
                 open=row["Open"],

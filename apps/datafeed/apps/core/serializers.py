@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Company, PriceHistory
+from .models import Company, PriceHistoryD1
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -8,7 +8,7 @@ class CompanySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PriceHistorySerializer(serializers.ModelSerializer):
+class PriceHistoryD1Serializer(serializers.ModelSerializer):
     class Meta:
-        model = PriceHistory
+        model = PriceHistoryD1
         exclude = ["company", "id", "adj_close"]
