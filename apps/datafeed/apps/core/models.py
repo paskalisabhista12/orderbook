@@ -15,7 +15,72 @@ class Company(models.Model):
         return self.ticker
 
 class PriceHistoryD1(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices_d1")
+    date = models.DateTimeField()
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    adj_close = models.FloatField(null=True, blank=True)
+    volume = models.BigIntegerField()
+
+    class Meta:
+        unique_together = ("company", "date")
+        
+class PriceHistoryH4(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices_h4")
+    date = models.DateTimeField()
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    adj_close = models.FloatField(null=True, blank=True)
+    volume = models.BigIntegerField()
+
+    class Meta:
+        unique_together = ("company", "date")
+        
+class PriceHistoryH1(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices_h1")
+    date = models.DateTimeField()
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    adj_close = models.FloatField(null=True, blank=True)
+    volume = models.BigIntegerField()
+
+    class Meta:
+        unique_together = ("company", "date")
+        
+class PriceHistoryM30(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices_m30")
+    date = models.DateTimeField()
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    adj_close = models.FloatField(null=True, blank=True)
+    volume = models.BigIntegerField()
+
+    class Meta:
+        unique_together = ("company", "date")
+        
+class PriceHistoryM15(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices_m15")
+    date = models.DateTimeField()
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    adj_close = models.FloatField(null=True, blank=True)
+    volume = models.BigIntegerField()
+
+    class Meta:
+        unique_together = ("company", "date")
+        
+class PriceHistoryM5(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="prices_m5")
     date = models.DateTimeField()
     open = models.FloatField()
     high = models.FloatField()
