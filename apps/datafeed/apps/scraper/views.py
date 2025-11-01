@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from playwright.async_api import async_playwright
 from apps.core.models import Company, PriceHistoryD1
 from apps.core.utils.response_builder import ResponseBuilder
-from apps.scraper.tasks import batch_fetch_stock_data
+from apps.scraper.tasks import fetch_daily_stock_data
 from playwright.async_api import async_playwright
 from rest_framework import serializers
 from rest_framework import status
@@ -55,9 +55,9 @@ async def fetch_tickers():
                         text = await first_td.inner_text()
                         texts.append(text.strip())
 
-                print(f"Sending {texts} to scraper.batching_fetch_stock_data")
-                batch_fetch_stock_data.apply_async(
-                    args=[texts], queue="scraper.batching_fetch_stock_data"
+                print(f"Sending {texts} to scraper.fetch_daily_stock_data")
+                fetch_daily_stock_data.apply_async(
+                    args=[texts], queue="scraper.fetch_daily_stock_data"
                 )
 
                 # If the last page then break, else go to next page
@@ -90,7 +90,7 @@ class FetchPriceSerializer(serializers.Serializer):
 
 
 @api_view(["POST"])
-def fetch_price(request):
+def fetch_price (request):
     serializer = FetchPriceSerializer(data=request.data)
 
     if not serializer.is_valid():

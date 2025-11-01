@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+from celery.schedules import crontab
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -133,3 +135,51 @@ CELERY_RESULT_BACKEND = "rpc://"
 # timezone (match Django)
 CELERY_TIMEZONE = "UTC"
 CELERY_ENABLE_UTC = True
+
+CELERY_BEAT_SCHEDULE = {
+    # --- Daily (D1) ---
+    "schedule_to_fetch_daily_stock_data": {
+        "task": "apps.scraper.tasks.schedule_to_fetch_daily_stock_data",
+        "schedule": crontab(hour=18, minute=0),  # Runs every day at 18:00 (6 PM)
+        "options": {
+            "timezone": "Asia/Jakarta",
+            "queue": "scraper.schedule_to_fetch_daily_stock_data",
+        },
+    },
+    # --- Hourly (H1) ---
+    "schedule_to_fetch_h1_stock_data": {
+        "task": "apps.scraper.tasks.schedule_to_fetch_h1_stock_data",
+        "schedule": crontab(minute=0),  # Every hour at :00
+        "options": {
+            "timezone": "Asia/Jakarta",
+            "queue": "scraper.schedule_to_fetch_h1_stock_data",
+        },
+    },
+    # --- 30 Minutes (M30) ---
+    "schedule_to_fetch_m30_stock_data": {
+        "task": "apps.scraper.tasks.schedule_to_fetch_m30_stock_data",
+        "schedule": crontab(minute="*/30"),  # Every 30 minutes
+        "options": {
+            "timezone": "Asia/Jakarta",
+            "queue": "scraper.schedule_to_fetch_m30_stock_data",
+        },
+    },
+    # --- 15 Minutes (M15) ---
+    "schedule_to_fetch_m15_stock_data": {
+        "task": "apps.scraper.tasks.schedule_to_fetch_m15_stock_data",
+        "schedule": crontab(minute="*/15"),  # Every 15 minutes
+        "options": {
+            "timezone": "Asia/Jakarta",
+            "queue": "scraper.schedule_to_fetch_m15_stock_data",
+        },
+    },
+    # --- 5 Minutes (M5) ---
+    "schedule_to_fetch_m5_stock_data": {
+        "task": "apps.scraper.tasks.schedule_to_fetch_m5_stock_data",
+        "schedule": crontab(minute="*/5"),  # Every 5 minutes
+        "options": {
+            "timezone": "Asia/Jakarta",
+            "queue": "scraper.schedule_to_fetch_m5_stock_data",
+        },
+    },
+}

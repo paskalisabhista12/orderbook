@@ -24,8 +24,33 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 # Explicitly declare queues so RabbitMQ won't create auto-delete ones
 app.conf.task_queues = [
     Queue(
-        "scraper.batching_fetch_stock_data",
-        routing_key="scraper.batching_fetch_stock_data",
+        "scraper.fetch_daily_stock_data",
+        routing_key="scraper.fetch_daily_stock_data",
+        durable=True,
+    ),
+    Queue(
+        "scraper.schedule_to_fetch_daily_stock_data",
+        routing_key="scraper.schedule_to_fetch_daily_stock_data",
+        durable=True,
+    ),
+    Queue(
+        "scraper.schedule_to_fetch_h1_stock_data",
+        routing_key="scraper.schedule_to_fetch_h1_stock_data",
+        durable=True,
+    ),
+    Queue(
+        "scraper.schedule_to_fetch_m30_stock_data",
+        routing_key="scraper.schedule_to_fetch_m30_stock_data",
+        durable=True,
+    ),
+    Queue(
+        "scraper.schedule_to_fetch_m15_stock_data",
+        routing_key="scraper.schedule_to_fetch_m15_stock_data",
+        durable=True,
+    ),
+    Queue(
+        "scraper.schedule_to_fetch_m5_stock_data",
+        routing_key="scraper.schedule_to_fetch_5_stock_data",
         durable=True,
     ),
 ]
