@@ -2,7 +2,14 @@ from datetime import datetime, timezone
 from django.db import IntegrityError
 from rest_framework.decorators import api_view
 from playwright.async_api import async_playwright
-from apps.core.models import Company, PriceHistoryD1
+from apps.core.models import (
+    Company,
+    PriceHistoryD1,
+    PriceHistoryH1,
+    PriceHistoryM15,
+    PriceHistoryM30,
+    PriceHistoryM5,
+)
 from apps.core.utils.response_builder import ResponseBuilder
 from apps.scraper.tasks import fetch_daily_stock_data
 from playwright.async_api import async_playwright
@@ -90,7 +97,7 @@ class FetchPriceSerializer(serializers.Serializer):
 
 
 @api_view(["POST"])
-def fetch_price (request):
+def fetch_price(request):
     serializer = FetchPriceSerializer(data=request.data)
 
     if not serializer.is_valid():
@@ -118,17 +125,67 @@ def fetch_price (request):
         date = datetime.fromtimestamp(index.timestamp(), tz=timezone.utc)
 
         try:
-            PriceHistoryD1.objects.create(
-                company=company,
-                date=date,
-                open=row["Open"],
-                high=row["High"],
-                low=row["Low"],
-                close=row["Close"],
-                adj_close=row.get("Adj Close", None),
-                volume=row["Volume"],
-            )
-            created_rows += 1
+            match interval:
+                case "1d":
+                    PriceHistoryD1.objects.create(
+                        company=company,
+                        date=date,
+                        open=row["Open"],
+                        high=row["High"],
+                        low=row["Low"],
+                        close=row["Close"],
+                        adj_close=row.get("Adj Close", None),
+                        volume=row["Volume"],
+                    )
+                    created_rows += 1
+                case "1h":
+                    PriceHistoryH1.objects.create(
+                        company=company,
+                        date=date,
+                        open=row["Open"],
+                        high=row["High"],
+                        low=row["Low"],
+                        close=row["Close"],
+                        adj_close=row.get("Adj Close", None),
+                        volume=row["Volume"],
+                    )
+                    created_rows += 1
+                case "30m":
+                    PriceHistoryM30.objects.create(
+                        company=company,
+                        date=date,
+                        open=row["Open"],
+                        high=row["High"],
+                        low=row["Low"],
+                        close=row["Close"],
+                        adj_close=row.get("Adj Close", None),
+                        volume=row["Volume"],
+                    )
+                    created_rows += 1
+                case "15m":
+                    PriceHistoryM15.objects.create(
+                        company=company,
+                        date=date,
+                        open=row["Open"],
+                        high=row["High"],
+                        low=row["Low"],
+                        close=row["Close"],
+                        adj_close=row.get("Adj Close", None),
+                        volume=row["Volume"],
+                    )
+                    created_rows += 1
+                case "5m":
+                    PriceHistoryM5.objects.create(
+                        company=company,
+                        date=date,
+                        open=row["Open"],
+                        high=row["High"],
+                        low=row["Low"],
+                        close=row["Close"],
+                        adj_close=row.get("Adj Close", None),
+                        volume=row["Volume"],
+                    )
+                    created_rows += 1
         except IntegrityError:
             # Skip if (company, date) already exists
             continue
