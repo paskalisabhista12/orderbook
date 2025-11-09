@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Company, PriceHistoryD1
+from .models import Company
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -8,7 +8,12 @@ class CompanySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PriceHistoryD1Serializer(serializers.ModelSerializer):
-    class Meta:
-        model = PriceHistoryD1
-        exclude = ["company", "id", "adj_close"]
+def get_price_history_serializer(model_class):
+    """Return a ModelSerializer class for the given model."""
+
+    class DynamicPriceHistorySerializer(serializers.ModelSerializer):
+        class Meta:
+            model = model_class
+            exclude = ["id", "company", "adj_close"]
+
+    return DynamicPriceHistorySerializer
