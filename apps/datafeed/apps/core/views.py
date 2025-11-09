@@ -18,7 +18,7 @@ from .type import TIMEFRAME
 from rest_framework import serializers
 
 
-class StockQueryParamsSerializer(serializers.Serializer):
+class StockPriceHistoryQueryParamsSerializer(serializers.Serializer):
     # limit = serializers.IntegerField(required=False, min_value=1, max_value=1000, default=100)
     timeframe = serializers.ChoiceField(
         required=False,
@@ -35,7 +35,7 @@ class StockQueryParamsSerializer(serializers.Serializer):
 
 @api_view(["GET"])
 def get_stock_price_history(request, ticker):
-    query_serializer = StockQueryParamsSerializer(data=request.query_params)
+    query_serializer = StockPriceHistoryQueryParamsSerializer(data=request.query_params)
     query_serializer.is_valid(raise_exception=True)
     params = query_serializer.validated_data
     try:
@@ -63,6 +63,23 @@ def get_stock_price_history(request, ticker):
                     "timeframe": timeframe,
                     "price": serializer.data,
                 },
+            }
+        )
+
+    except Company.DoesNotExist:
+        return ResponseBuilder.create_error_response(
+            message="Company not found!", status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@api_view(["GET"])
+def get_stock(request, ticker):
+    try:
+        company = Company.objects.get(ticker=ticker)
+        company_serializer = CompanySerializer(company)
+        return ResponseBuilder.create_success_response(
+            data={
+                "company": company_serializer.data,
             }
         )
 

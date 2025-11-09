@@ -5,7 +5,7 @@ from .models import Company
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = "__all__"
+        exclude = ["id"]
 
 
 def get_price_history_serializer(model_class):
