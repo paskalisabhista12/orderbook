@@ -140,7 +140,7 @@ CELERY_BEAT_SCHEDULE = {
     # --- Daily (D1) ---
     "schedule_to_fetch_daily_stock_data": {
         "task": "apps.scraper.tasks.schedule_to_fetch_daily_stock_data",
-        "schedule": crontab(hour=18, minute=0),  # Runs every day at 18:00 (6 PM)
+        "schedule": crontab(hour=18, minute=0, day_of_week="1-5"),
         "options": {
             "timezone": "Asia/Jakarta",
             "queue": "scraper.schedule_to_fetch_daily_stock_data",
@@ -149,7 +149,7 @@ CELERY_BEAT_SCHEDULE = {
     # --- Hourly (H1) ---
     "schedule_to_fetch_h1_stock_data": {
         "task": "apps.scraper.tasks.schedule_to_fetch_h1_stock_data",
-        "schedule": crontab(minute=0),  # Every hour at :00
+        "schedule": crontab(minute=0, day_of_week="1-5"),
         "options": {
             "timezone": "Asia/Jakarta",
             "queue": "scraper.schedule_to_fetch_h1_stock_data",
@@ -158,7 +158,7 @@ CELERY_BEAT_SCHEDULE = {
     # --- 30 Minutes (M30) ---
     "schedule_to_fetch_m30_stock_data": {
         "task": "apps.scraper.tasks.schedule_to_fetch_m30_stock_data",
-        "schedule": crontab(minute="*/30"),  # Every 30 minutes
+        "schedule": crontab(minute="*/30", day_of_week="1-5"),
         "options": {
             "timezone": "Asia/Jakarta",
             "queue": "scraper.schedule_to_fetch_m30_stock_data",
@@ -167,7 +167,7 @@ CELERY_BEAT_SCHEDULE = {
     # --- 15 Minutes (M15) ---
     "schedule_to_fetch_m15_stock_data": {
         "task": "apps.scraper.tasks.schedule_to_fetch_m15_stock_data",
-        "schedule": crontab(minute="*/15"),  # Every 15 minutes
+        "schedule": crontab(minute="*/15", day_of_week="1-5"),
         "options": {
             "timezone": "Asia/Jakarta",
             "queue": "scraper.schedule_to_fetch_m15_stock_data",
@@ -176,10 +176,19 @@ CELERY_BEAT_SCHEDULE = {
     # --- 5 Minutes (M5) ---
     "schedule_to_fetch_m5_stock_data": {
         "task": "apps.scraper.tasks.schedule_to_fetch_m5_stock_data",
-        "schedule": crontab(minute="*/5"),  # Every 5 minutes
+        "schedule": crontab(minute="*/5", day_of_week="1-5"),
         "options": {
             "timezone": "Asia/Jakarta",
             "queue": "scraper.schedule_to_fetch_m5_stock_data",
+        },
+    },
+    # --- Cleanup ---
+    "schedule_to_clean_up_price_history": {
+        "task": "apps.scraper.scheduler.price_history_clean_up_tasks.schedule_to_clean_up_price_history",
+        "schedule": crontab(hour=18, minute=0, day_of_week="1-5"),
+        "options": {
+            "timezone": "Asia/Jakarta",
+            "queue": "scraper.schedule_to_clean_up_price_history",
         },
     },
 }

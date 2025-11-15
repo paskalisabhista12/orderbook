@@ -6,6 +6,8 @@ from apps.core.models import *
 import yfinance as yf
 import time
 
+from .scheduler.price_history_clean_up_tasks import schedule_to_clean_up_price_history
+
 logger = get_task_logger(__name__)
 
 

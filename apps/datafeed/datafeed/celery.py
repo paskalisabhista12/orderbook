@@ -53,6 +53,11 @@ app.conf.task_queues = [
         routing_key="scraper.schedule_to_fetch_5_stock_data",
         durable=True,
     ),
+    Queue(
+        "scraper.schedule_to_clean_up_price_history",
+        routing_key="scraper.schedule_to_clean_up_price_history",
+        durable=True,
+    ),
 ]
 
 # -----------------------------------------------------------------------------
