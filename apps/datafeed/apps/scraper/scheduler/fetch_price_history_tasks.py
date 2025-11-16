@@ -1,5 +1,6 @@
 import time
-from datetime import datetime
+import yfinance as yf 
+from datetime import datetime, timezone
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
