@@ -57,4 +57,4 @@ coverage.xml
 .hypothesis/
 
 # Celery
-celerybeat-schedule
+celerybeat-schedule*
