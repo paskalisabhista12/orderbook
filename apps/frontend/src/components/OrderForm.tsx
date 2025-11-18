@@ -4,7 +4,7 @@
 
 import { Order, Side } from "@/utils/types";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
-import { submitOrder } from "@/api/orderApi";
+import { submitOrder } from "@/api/OrderService";
 import toast from "react-hot-toast";
 
 type OrderFormProps = {

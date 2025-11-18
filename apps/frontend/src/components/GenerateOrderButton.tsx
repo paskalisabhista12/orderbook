@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { generateRandomOrder } from "@/api/orderApi";
+import { generateRandomOrder } from "@/api/OrderService";
 
 export default function GenerateOrderButton() {
     const [loading, setLoading] = useState(false);
