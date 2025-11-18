@@ -8,6 +8,7 @@ import { submitOrder } from "@/api/OrderService";
 import toast from "react-hot-toast";
 
 type OrderFormProps = {
+    ticker: string | undefined;
     side: Side;
     setSide: (side: Side) => void;
     price: string;
@@ -16,6 +17,7 @@ type OrderFormProps = {
     setLot: (lot: string) => void;
 };
 export default function OrderForm({
+    ticker,
     side,
     setSide,
     price,

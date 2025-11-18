@@ -1,5 +1,6 @@
 "use client";
 
+import OrderBookContainer from "@/components/container/OrderBookContainer";
 import GenerateOrderButton from "@/components/GenerateOrderButton";
 import OrderBook from "@/components/OrderBook";
 import OrderForm from "@/components/OrderForm";
@@ -15,19 +16,9 @@ export default function Home() {
         <main className="min-h-screen flex items-center justify-center gap-10 bg-gray-100 p-10">
             <div className="flex flex-col items-center gap-10 w-full">
                 <GenerateOrderButton />
-                <OrderBook setPrice={setPrice} />
-                <OrderForm
-                    side={side}
-                    setSide={setSide}
-                    price={price}
-                    setPrice={setPrice}
-                    lot={lot}
-                    setLot={setLot}
-                />
+                <OrderBookContainer ticker={"BMRI"} />
             </div>
-            <div className="flex flex-col gap-10 w-fit">
-                
-            </div>
+            <div className="flex flex-col gap-10 w-fit"></div>
             <RunningTrade />
         </main>
     );

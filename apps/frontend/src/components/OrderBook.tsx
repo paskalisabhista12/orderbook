@@ -5,7 +5,10 @@ import { IMessage } from "@stomp/stompjs";
 import QuoteSummary from "./QuoteSummary";
 import { useStompClient } from "@/utils/useStompClient";
 
+const nf = new Intl.NumberFormat("en-US");
+
 type OrderFormProps = {
+    ticker: string | undefined;
     setPrice: (price: string) => void;
 };
 
@@ -55,25 +58,22 @@ export default function OrderBook({ setPrice }: OrderFormProps) {
         return () => sub.unsubscribe();
     }, [client, connected]);
 
-    const nf = new Intl.NumberFormat("en-US");
     return (
         <div className="w-full max-w-5xl mx-auto bg-gray-900 text-white rounded-lg shadow overflow-hidden font-mono">
             {/* Header */}
-            {summary && (
-                <QuoteSummary
-                    ticker={summary.ticker ?? ""}
-                    prev={summary.open ?? 0}
-                    change={summary.change ?? 0}
-                    percent={summary.percent ?? 0}
-                    open={summary.open ?? 0}
-                    high={summary.high ?? 0}
-                    low={summary.low ?? 0}
-                    lot={summary.lot ?? "-"}
-                    val={summary.value ?? "-"}
-                    freq={summary.freq ?? "-"}
-                    lastPrice={summary.lastPrice ?? 0}
-                />
-            )}
+            <QuoteSummary
+                ticker={summary?.ticker ?? ""}
+                prev={summary?.open ?? 0}
+                change={summary?.change ?? 0}
+                percent={summary?.percent ?? 0}
+                open={summary?.open ?? 0}
+                high={summary?.high ?? 0}
+                low={summary?.low ?? 0}
+                lot={summary?.lot ?? "-"}
+                val={summary?.value ?? "-"}
+                freq={summary?.freq ?? "-"}
+                lastPrice={summary?.lastPrice ?? 0}
+            />
 
             {/* Table Header */}
             <div className="grid grid-cols-6 text-xs font-bold text-gray-300 bg-gray-800 border-b border-gray-700">
