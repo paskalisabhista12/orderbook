@@ -4,6 +4,7 @@ from apps.core.serializers import (
     CompanySerializer,
     get_price_history_serializer,
 )
+from apps.core.utils.pagination import StandardResultsSetPagination
 from .models import (
     Company,
     PriceHistoryD1,
@@ -86,4 +87,22 @@ def get_stock(request, ticker):
     except Company.DoesNotExist:
         return ResponseBuilder.create_error_response(
             message="Company not found!", status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@api_view(["GET"])
+def get_ticker(request):
+    try:
+        qs = Company.objects.values("ticker", "name").order_by("ticker")
+
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(qs, request)
+
+        return ResponseBuilder.create_paginated_success_response(
+            data=result_page, pagination=paginator, status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        return ResponseBuilder.create_error_response(
+            message=str(e), status=status.HTTP_404_NOT_FOUND
         )
