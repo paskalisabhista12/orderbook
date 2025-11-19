@@ -5,3 +5,4 @@ yfinance==0.2.66
 celery==5.5.3
 python-decouple==3.8
 psycopg2-binary==2.9.10
+django-cors-headers==4.9.0
