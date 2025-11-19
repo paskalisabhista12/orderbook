@@ -15,7 +15,7 @@ from .models import (
 )
 from .utils.response_builder import ResponseBuilder
 from .type import TIMEFRAME
-
+from django.db.models import Q
 from rest_framework import serializers
 
 
@@ -93,7 +93,12 @@ def get_stock(request, ticker):
 @api_view(["GET"])
 def get_ticker(request):
     try:
+        search = request.GET.get("search")
+
         qs = Company.objects.values("ticker", "name").order_by("ticker")
+
+        if search:
+            qs = qs.filter(Q(ticker__icontains=search))
 
         paginator = StandardResultsSetPagination()
         result_page = paginator.paginate_queryset(qs, request)
