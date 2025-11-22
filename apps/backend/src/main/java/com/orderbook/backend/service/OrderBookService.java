@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Service
 @Getter
 public class OrderBookService {
     
@@ -38,20 +37,30 @@ public class OrderBookService {
     });
     // Keep last 100 trades (newest first)
     private final Deque<TradeEvent> tradeHistory = new LinkedList<>();
-    private final String ticker = "BMRI";
+    private String ticker;
     // Market stats
-    private final int prev = 4730; // assume yesterday’s close (in real app, load from DB)
-    private int open = prev;
-    private int high = open;
-    private int low = open;
-    private int lastPrice = open;
-    
+    private int prev; // assume yesterday’s close (in real app, load from DB)
+    private int open;
+    private int high;
+    private int low;
+    private int lastPrice;
     private long totalLot = 0;   // accumulated traded volume
     private long totalValue = 0; // accumulated traded value
     private long totalFreq = 0;  // number of trades
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    
+    public OrderBookService(String ticker, int prev, SimpMessagingTemplate template) {
+        this.ticker = ticker;
+        this.prev = prev;
+        this.open = prev;
+        this.high = prev;
+        this.low = prev;
+        this.lastPrice = prev;
+        this.messagingTemplate = template;
+    }
+    
     
     public synchronized void addOrder(Order order) {
         int referencePrice;

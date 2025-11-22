@@ -2,48 +2,50 @@ package com.orderbook.backend.controller;
 
 import com.orderbook.backend.dto.OrderBookResponse;
 import com.orderbook.backend.model.Order;
+import com.orderbook.backend.config.registry.OrderBookRegistry;
 import com.orderbook.backend.service.OrderBookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
     
-    private final OrderBookService orderBookService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final OrderBookRegistry orderBookRegistry;
     
-    public OrderController(OrderBookService orderBookService, SimpMessagingTemplate messagingTemplate) {
-        this.orderBookService = orderBookService;
+    public OrderController(SimpMessagingTemplate messagingTemplate, OrderBookRegistry orderBookRegistry) {
         this.messagingTemplate = messagingTemplate;
+        this.orderBookRegistry = orderBookRegistry;
     }
     
     @PostMapping
-    public ResponseEntity<OrderBookResponse> createOrder(@RequestBody Order order) {
-        // Add order to order book
-        orderBookService.addOrder(order);
+    public ResponseEntity<OrderBookResponse> createOrder(
+            @RequestParam String ticker,
+            @RequestBody Order order
+    ) {
         
-        // Prepare snapshot for response
+        // 🔥 select proper order book at request time
+        OrderBookService orderBookService = orderBookRegistry.get(ticker);
+        
+        orderBookService.addOrder(order);
         OrderBookResponse snapshot = orderBookService.getSnapshot();
         
-        // ✅ After sending response, notify WebSocket subscribers
-        messagingTemplate.convertAndSend("/topic/orderbook", snapshot);
+        messagingTemplate.convertAndSend("/topic/orderbook/" + ticker, snapshot);
         
-        // Return HTTP response
         return ResponseEntity.ok(snapshot);
     }
     
     @PostMapping("/random-generate")
-    public ResponseEntity<OrderBookResponse> generateRandomOrderBook() {
+    public ResponseEntity<OrderBookResponse> randomGenerate(@RequestParam String ticker) {
+        
+        OrderBookService orderBookService = orderBookRegistry.get(ticker);
+        
         OrderBookResponse snapshot = orderBookService.fillRandomOrderBook(5);
-        // ✅ notify websocket subscribers too
-        messagingTemplate.convertAndSend("/topic/orderbook", snapshot);
+        
+        messagingTemplate.convertAndSend("/topic/orderbook/" + ticker, snapshot);
         
         return ResponseEntity.ok(snapshot);
     }
 }
-

@@ -17,6 +17,7 @@ from .utils.response_builder import ResponseBuilder
 from .type import TIMEFRAME
 from django.db.models import Q
 from rest_framework import serializers
+from django.db.models import Subquery, OuterRef
 
 
 class StockPriceHistoryQueryParamsSerializer(serializers.Serializer):
@@ -95,7 +96,17 @@ def get_ticker(request):
     try:
         search = request.GET.get("search")
 
-        qs = Company.objects.values("ticker", "name").order_by("ticker")
+        latest_price = (
+            PriceHistoryD1.objects.filter(company_id=OuterRef("id"))
+            .order_by("date")
+            .values("close")[:1]
+        )
+
+        qs = (
+            Company.objects.annotate(prevPrice=Subquery(latest_price))
+            .values("ticker", "name", "prevPrice")
+            .order_by("ticker")
+        )
 
         if search:
             qs = qs.filter(Q(ticker__icontains=search))
