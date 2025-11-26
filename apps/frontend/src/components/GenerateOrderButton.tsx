@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { generateRandomOrder } from "@/api/OrderService";
 
-export default function GenerateOrderButton() {
+export default function GenerateOrderButton({ ticker }: { ticker: string }) {
     const [loading, setLoading] = useState(false);
 
     const handleClick = async () => {
         try {
             setLoading(true);
-            await generateRandomOrder();
+            await generateRandomOrder(ticker);
         } finally {
             setLoading(false);
         }

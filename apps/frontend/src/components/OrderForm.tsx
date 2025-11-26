@@ -35,7 +35,7 @@ export default function OrderForm({
         };
 
         try {
-            await submitOrder(payload);
+            await submitOrder(ticker, payload);
             setPrice("");
             setLot("");
         } catch (err: any) {

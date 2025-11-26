@@ -2,14 +2,20 @@ import { useState } from "react";
 import OrderBook from "../OrderBook";
 import OrderForm from "../OrderForm";
 import { Side } from "@/utils/types";
+import GenerateOrderButton from "../GenerateOrderButton";
 
-export default function OrderBookContainer({ ticker }: { ticker: string }) {
+export default function OrderBookContainer() {
     const [side, setSide] = useState<Side>("BUY");
     const [price, setPrice] = useState<string>("");
+    const [ticker, setTicker] = useState<string>("BBCA");
     const [lot, setLot] = useState<string>("");
     return (
         <>
-            <OrderBook ticker={ticker} setPrice={setPrice} />
+            <OrderBook
+                ticker={ticker}
+                setTicker={setTicker}
+                setPrice={setPrice}
+            />
             <OrderForm
                 ticker={ticker}
                 side={side}
@@ -19,6 +25,7 @@ export default function OrderBookContainer({ ticker }: { ticker: string }) {
                 lot={lot}
                 setLot={setLot}
             />
+            <GenerateOrderButton ticker={ticker} />
         </>
     );
 }

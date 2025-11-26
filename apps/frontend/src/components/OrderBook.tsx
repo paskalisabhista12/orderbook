@@ -8,7 +8,8 @@ import { useStompClient } from "@/utils/useStompClient";
 const nf = new Intl.NumberFormat("en-US");
 
 type OrderFormProps = {
-    ticker: string | undefined;
+    ticker: string;
+    setTicker: (val: string) => void;
     setPrice: (price: string) => void;
 };
 
@@ -34,7 +35,11 @@ interface OrderBookResponse {
     freq?: string;
 }
 
-export default function OrderBook({ setPrice }: OrderFormProps) {
+export default function OrderBook({
+    ticker,
+    setTicker,
+    setPrice,
+}: OrderFormProps) {
     const [bids, setBids] = useState<Order[]>([]);
     const [asks, setAsks] = useState<Order[]>([]);
     const [summary, setSummary] = useState<OrderBookResponse | null>(null);
@@ -42,27 +47,38 @@ export default function OrderBook({ setPrice }: OrderFormProps) {
     const { client, connected } = useStompClient();
 
     useEffect(() => {
-        if (!client || !connected) return;
+        if (!client || !connected || !ticker) return;
 
-        const sub = client.subscribe("/topic/orderbook", (msg: IMessage) => {
-            const data = JSON.parse(msg.body);
-            setBids(data.bids || []);
-            setAsks(data.asks || []);
-            setSummary(data);
-        });
+        // subscribe to ticker channel
+        const sub = client.subscribe(
+            `/topic/orderbook/${ticker}`,
+            (msg: IMessage) => {
+                const data = JSON.parse(msg.body);
+                console.log(data)
+                setBids(data.bids || []);
+                setAsks(data.asks || []);
+                setSummary(data);
+            }
+        );
 
+        // request snapshot for this ticker
         client.publish({
             destination: "/app/snapshot",
+            body: ticker,
         });
 
-        return () => sub.unsubscribe();
-    }, [client, connected]);
+        // cleanup previous subscription when ticker changes
+        return () => {
+            sub.unsubscribe();
+        };
+    }, [ticker, client, connected]);
 
     return (
         <div className="w-full max-w-5xl mx-auto bg-gray-900 text-white rounded-lg shadow overflow-hidden font-mono">
             {/* Header */}
             <QuoteSummary
                 ticker={summary?.ticker ?? ""}
+                setTicker={setTicker}
                 prev={summary?.open ?? 0}
                 change={summary?.change ?? 0}
                 percent={summary?.percent ?? 0}

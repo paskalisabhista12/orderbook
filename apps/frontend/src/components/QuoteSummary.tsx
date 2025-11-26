@@ -1,7 +1,12 @@
 "use client";
 
+import { getTicker } from "@/api/DataFeedService";
+import { useEffect, useState } from "react";
+import SearchableSelect from "./SearchableSelect";
+
 type QuoteSummaryProps = {
     ticker: string;
+    setTicker: (val: string) => void;
     prev: number;
     change: number;
     percent: number;
@@ -14,8 +19,14 @@ type QuoteSummaryProps = {
     freq: string;
 };
 
+interface TickerOption {
+    ticker: string;
+    name: string;
+}
+
 export default function QuoteSummary({
     ticker,
+    setTicker,
     prev,
     change,
     percent,
@@ -27,6 +38,9 @@ export default function QuoteSummary({
     val,
     freq,
 }: QuoteSummaryProps) {
+    const [tickers, setTickers] = useState<TickerOption[]>([]);
+    const [loading, setLoading] = useState(true);
+
     // Color depending on change
     const changeColor =
         change > 0
@@ -35,12 +49,34 @@ export default function QuoteSummary({
             ? "text-red-500"
             : "text-gray-400";
 
+    useEffect(() => {
+        const fetchTickers = async () => {
+            try {
+                const res = await getTicker();
+                setTickers(res.data.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTickers();
+    }, []);
+
     return (
         <div className="bg-black text-white font-mono text-sm rounded-lg shadow p-4 grid grid-cols-2 gap-y-2 gap-x-8 w-full">
             {/* Left Column */}
             <div className="flex justify-between">
                 <span className="text-gray-400">Ticker</span>
-                <span className="text-yellow-400 font-bold">{ticker}</span>
+                <span className="text-gray-400 font-bold">
+                    <SearchableSelect
+                        loading={loading}
+                        items={tickers}
+                        value={ticker}
+                        onChange={(val) => setTicker(val)}
+                    />
+                </span>
             </div>
             <div className="flex justify-between">
                 <span className="text-gray-400">Prv</span>
