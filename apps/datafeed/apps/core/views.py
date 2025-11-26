@@ -98,7 +98,7 @@ def get_ticker(request):
 
         latest_price = (
             PriceHistoryD1.objects.filter(company_id=OuterRef("id"))
-            .order_by("date")
+            .order_by("-date")
             .values("close")[:1]
         )
 
