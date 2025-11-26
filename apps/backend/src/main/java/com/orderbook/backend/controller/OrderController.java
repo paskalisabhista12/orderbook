@@ -1,8 +1,8 @@
 package com.orderbook.backend.controller;
 
+import com.orderbook.backend.config.registry.OrderBookRegistry;
 import com.orderbook.backend.dto.OrderBookResponse;
 import com.orderbook.backend.model.Order;
-import com.orderbook.backend.config.registry.OrderBookRegistry;
 import com.orderbook.backend.service.OrderBookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,18 +21,15 @@ public class OrderController {
     }
     
     @PostMapping
-    public ResponseEntity<OrderBookResponse> createOrder(
-            @RequestParam String ticker,
-            @RequestBody Order order
-    ) {
+    public ResponseEntity<OrderBookResponse> createOrder(@RequestParam String ticker, @RequestBody Order order) {
         
-        // 🔥 select proper order book at request time
         OrderBookService orderBookService = orderBookRegistry.get(ticker);
         
         orderBookService.addOrder(order);
         OrderBookResponse snapshot = orderBookService.getSnapshot();
         
-        messagingTemplate.convertAndSend("/topic/orderbook/" + ticker, snapshot);
+        messagingTemplate.convertAndSend("/topic/orderbook/" + ticker,
+                snapshot);
         
         return ResponseEntity.ok(snapshot);
     }
@@ -40,11 +37,14 @@ public class OrderController {
     @PostMapping("/random-generate")
     public ResponseEntity<OrderBookResponse> randomGenerate(@RequestParam String ticker) {
         
-        OrderBookService orderBookService = orderBookRegistry.get(ticker);
+        String tickr = ticker.toUpperCase();
+        
+        OrderBookService orderBookService = orderBookRegistry.get(tickr);
         
         OrderBookResponse snapshot = orderBookService.fillRandomOrderBook(5);
         
-        messagingTemplate.convertAndSend("/topic/orderbook/" + ticker, snapshot);
+        messagingTemplate.convertAndSend("/topic/orderbook/" + tickr,
+                snapshot);
         
         return ResponseEntity.ok(snapshot);
     }

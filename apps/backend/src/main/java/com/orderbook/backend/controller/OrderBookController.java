@@ -4,8 +4,10 @@ import com.orderbook.backend.config.registry.OrderBookRegistry;
 import com.orderbook.backend.dto.OrderBookResponse;
 import com.orderbook.backend.model.TradeEvent;
 import com.orderbook.backend.service.OrderBookService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
@@ -14,6 +16,8 @@ import java.util.List;
 public class OrderBookController {
     
     private final OrderBookRegistry orderBookRegistry;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     
     public OrderBookController(OrderBookRegistry orderBookRegistry) {
         this.orderBookRegistry = orderBookRegistry;
@@ -23,16 +27,20 @@ public class OrderBookController {
      * WebSocket: request snapshot for a specific ticker
      */
     @MessageMapping("/snapshot")
-    @SendTo("/topic/orderbook")
-    public OrderBookResponse snapshot(String ticker) {
+    public void snapshot(String ticker) {
         
         OrderBookService book = orderBookRegistry.get(ticker);
         if (book == null) {
             throw new RuntimeException("Ticker not found: " + ticker);
         }
         
-        return book.getSnapshot();
+        OrderBookResponse snapshot = book.getSnapshot();
+        
+        // Send to: /topic/orderbook/{ticker}
+        messagingTemplate.convertAndSend("/topic/orderbook/" + ticker,
+                snapshot);
     }
+    
     
     /**
      * WebSocket: get recent trades of a specific ticker
@@ -40,12 +48,10 @@ public class OrderBookController {
     @MessageMapping("/recent-trades")
     @SendTo("/topic/trades/snapshot")
     public List<TradeEvent> getRecentTrades(String ticker) {
-        
         OrderBookService book = orderBookRegistry.get(ticker);
         if (book == null) {
             throw new RuntimeException("Ticker not found: " + ticker);
         }
-        
         return book.getRecentTrades();
     }
 }

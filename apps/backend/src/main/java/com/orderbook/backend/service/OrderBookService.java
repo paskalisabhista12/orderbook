@@ -9,7 +9,6 @@ import com.orderbook.backend.utils.IDXPriceValidator;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 
@@ -103,12 +102,12 @@ public class OrderBookService {
             } else {
                 tradePrice = bestSell.getPrice();
             }
+            this.lastPrice = tradePrice;
             
             executeTrade(side,
                     tradedQty,
                     tradePrice);
             
-            this.lastPrice = tradePrice;
             if (tradePrice > this.high)
                 this.high = tradePrice;
             if (tradePrice < this.low)

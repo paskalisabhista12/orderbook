@@ -39,27 +39,32 @@ public class OrderBookRegistry {
                 .size(10000)
                 .build();
         
-        GetTickerResponse apiResponse = dataFeedService
-                .getTickers(req)
+        GetTickerResponse apiResponse = dataFeedService.getTickers(req)
                 .onErrorResume(err -> {
-                    log.error("Failed to fetch tickers at startup: {}", err.getMessage());
+                    log.error("Failed to fetch tickers at startup: {}",
+                            err.getMessage());
                     return Mono.just(new GetTickerResponse()); // return empty response
                 })
                 .block();
         
         if (apiResponse != null && apiResponse.getData() != null) {
             for (CompanyDTO company : apiResponse.getData()) {
-                log.info("Adding {} to OrderBookService", company.toString());
+                log.info("Adding {} to OrderBookService",
+                        company.toString());
                 books.put(company.getTicker(),
-                        factory.create(company.getTicker(), 0));
+                        factory.create(company.getTicker(),
+                                company.getPrevPrice()));
             }
         }
         
-        log.info("OrderBookRegistry initialized with {} tickers", books.size());
+        log.info("OrderBookRegistry initialized with {} tickers",
+                books.size());
     }
     
     public OrderBookService getOrCreate(String ticker, int prevPrice) {
-        return books.computeIfAbsent(ticker, t -> factory.create(t, prevPrice));
+        return books.computeIfAbsent(ticker,
+                t -> factory.create(t,
+                        prevPrice));
     }
     
     public OrderBookService get(String ticker) {
