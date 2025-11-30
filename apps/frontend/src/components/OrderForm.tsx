@@ -6,6 +6,7 @@ import { Order, Side } from "@/utils/types";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { submitOrder } from "@/api/OrderService";
 import toast from "react-hot-toast";
+import { Geist, Geist_Mono } from "next/font/google";
 
 type OrderFormProps = {
     ticker: string | undefined;
@@ -16,6 +17,7 @@ type OrderFormProps = {
     lot: string;
     setLot: (lot: string) => void;
 };
+
 export default function OrderForm({
     ticker,
     side,
@@ -50,45 +52,50 @@ export default function OrderForm({
     return (
         <form
             onSubmit={handleSubmit}
-            className="bg-white shadow-2xl rounded-2xl p-6 space-y-6 max-w-md mx-auto border border-gray-200"
+            className="bg-gray-900 shadow-2xl rounded-2xl p-6 space-y-6 max-w-md mx-auto border border-gray-800"
         >
             {/* Title */}
-            <h2 className="text-xl font-bold text-gray-800 border-b pb-3">
-                Create New Order
+            <h2 className="flex justify-center text-xl font-semibold text-gray-100 border-b border-gray-700 pb-3">
+                New Order
             </h2>
 
             {/* Side selector */}
-            <div className="grid grid-cols-2 rounded-xl overflow-hidden border border-gray-200">
+            <div className="grid grid-cols-2 rounded-xl overflow-hidden border border-gray-700">
                 <button
                     type="button"
                     onClick={() => setSide("BUY")}
-                    className={`flex items-center justify-center gap-2 py-3 font-bold text-sm transition ${
-                        side === "BUY"
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-50 text-gray-700 hover:bg-green-50"
-                    }`}
+                    className={`flex items-center justify-center gap-2 py-3 font-semibold text-sm transition
+                        ${
+                            side === "BUY"
+                                ? "bg-green-600 text-white"
+                                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                        }
+                    `}
                 >
                     <ArrowUpCircle
                         size={18}
                         className={
-                            side === "BUY" ? "text-white" : "text-green-500"
+                            side === "BUY" ? "text-white" : "text-green-400"
                         }
                     />
                     Buy
                 </button>
+
                 <button
                     type="button"
                     onClick={() => setSide("SELL")}
-                    className={`flex items-center justify-center gap-2 py-3 font-bold text-sm transition ${
-                        side === "SELL"
-                            ? "bg-red-500 text-white"
-                            : "bg-gray-50 text-gray-700 hover:bg-red-50"
-                    }`}
+                    className={`flex items-center justify-center gap-2 py-3 font-semibold text-sm transition
+                        ${
+                            side === "SELL"
+                                ? "bg-red-600 text-white"
+                                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                        }
+                    `}
                 >
                     <ArrowDownCircle
                         size={18}
                         className={
-                            side === "SELL" ? "text-white" : "text-red-500"
+                            side === "SELL" ? "text-white" : "text-red-400"
                         }
                     />
                     Sell
@@ -97,7 +104,7 @@ export default function OrderForm({
 
             {/* Price */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                     Price
                 </label>
                 <input
@@ -106,7 +113,7 @@ export default function OrderForm({
                     onChange={(e) => setPrice(e.target.value)}
                     step="0.01"
                     min="0.01"
-                    className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                    className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     placeholder="Enter price"
                     required
                 />
@@ -114,7 +121,7 @@ export default function OrderForm({
 
             {/* Lot */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                     Lot
                 </label>
                 <input
@@ -123,23 +130,25 @@ export default function OrderForm({
                     onChange={(e) => setLot(e.target.value)}
                     step="1"
                     min="1"
-                    className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                    className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     placeholder="Enter lot size"
                     required
                 />
-                <span className="inline-block mt-2 text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
-                    1 lot = 100 shares
+                <span className="inline-block mt-2 text-xs font-semibold bg-gray-800 text-gray-400 px-2 py-1 rounded-md border border-gray-700">
+                    1 Lot = 100 Shares
                 </span>
             </div>
 
             {/* Submit */}
             <button
                 type="submit"
-                className={`w-full py-3 rounded-xl font-bold text-white text-sm shadow-md transition transform hover:scale-[1.02] ${
-                    side === "BUY"
-                        ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:ring-4 focus:ring-green-300"
-                        : "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:ring-4 focus:ring-red-300"
-                }`}
+                className={`w-full py-3 rounded-xl font-bold text-white text-sm shadow-md transition transform hover:scale-[1.02]
+                    ${
+                        side === "BUY"
+                            ? "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:ring-4 focus:ring-green-300/20"
+                            : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-4 focus:ring-red-300/20"
+                    }
+                `}
             >
                 Place {side} Order
             </button>
