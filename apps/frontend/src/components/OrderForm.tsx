@@ -52,7 +52,7 @@ export default function OrderForm({
     return (
         <form
             onSubmit={handleSubmit}
-            className="bg-gray-900 shadow-2xl rounded-2xl p-6 space-y-6 max-w-md mx-auto border border-gray-800"
+            className="bg-gray-900 shadow-2xl rounded-xl p-6 space-y-6 max-w-md mx-auto border-4 border-gray-800"
         >
             {/* Title */}
             <h2 className="flex justify-center text-xl font-semibold text-gray-100 border-b border-gray-700 pb-3">

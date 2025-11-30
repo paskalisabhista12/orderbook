@@ -25,7 +25,6 @@ export default function OrderBookContainer() {
                 lot={lot}
                 setLot={setLot}
             />
-            <GenerateOrderButton ticker={ticker} />
         </>
     );
 }

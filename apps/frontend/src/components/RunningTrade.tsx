@@ -49,7 +49,7 @@ export default function RunningTrade() {
     return (
         <div className="bg-gray-900 text-white rounded-lg shadow-lg w-full max-w-5xl mx-auto p-2 font-mono">
             {/* Table */}
-            <div className="overflow-y-auto max-h-[600px] border border-gray-700 rounded">
+            <div className="overflow-y-auto h-[600px] max-h-[600px] border border-gray-700 rounded">
                 <table className="w-full text-sm">
                     <thead className="bg-gray-800 text-gray-300 sticky top-0">
                         <tr>
