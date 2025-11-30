@@ -7,7 +7,6 @@ import com.orderbook.backend.model.Side;
 import com.orderbook.backend.model.TradeEvent;
 import com.orderbook.backend.utils.IDXPriceValidator;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.*;
@@ -15,7 +14,6 @@ import java.util.*;
 @Getter
 public class OrderBookService {
     
-    private static final int MAX_TRADES = 100;
     private final PriorityQueue<Order> buyOrders = new PriorityQueue<>((o1, o2) -> {
         int cmp = Double.compare(o2.getPrice(),
                 o1.getPrice());
@@ -34,8 +32,8 @@ public class OrderBookService {
         }
         return cmp;
     });
-    // Keep last 100 trades (newest first)
-    private final Deque<TradeEvent> tradeHistory = new LinkedList<>();
+    private final SimpMessagingTemplate messagingTemplate;
+    private final TradeHistoryService tradeHistoryService;
     private String ticker;
     // Market stats
     private int prev; // assume yesterday’s close (in real app, load from DB)
@@ -47,10 +45,8 @@ public class OrderBookService {
     private long totalValue = 0; // accumulated traded value
     private long totalFreq = 0;  // number of trades
     
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-    
-    public OrderBookService(String ticker, int prev, SimpMessagingTemplate template) {
+    public OrderBookService(String ticker, int prev, SimpMessagingTemplate template,
+            TradeHistoryService tradeHistoryService) {
         this.ticker = ticker;
         this.prev = prev;
         this.open = prev;
@@ -58,6 +54,7 @@ public class OrderBookService {
         this.low = prev;
         this.lastPrice = prev;
         this.messagingTemplate = template;
+        this.tradeHistoryService = tradeHistoryService;
     }
     
     
@@ -291,14 +288,10 @@ public class OrderBookService {
                 change,
                 percent);
         
-        
+        System.out.println(tradeEvent.toString());
         // Save trade to history
-        synchronized (tradeHistory) {
-            tradeHistory.addFirst(tradeEvent); // newest first
-            if (tradeHistory.size() > MAX_TRADES) {
-                tradeHistory.removeLast(); // remove oldest
-            }
-        }
+        tradeHistoryService.pushTradeEvent(tradeEvent);
+        System.out.println("XXXXXXXXXXXXXXXXXX");
         
         // Send to WebSocket subscribers
         messagingTemplate.convertAndSend("/topic/trades",
@@ -306,9 +299,7 @@ public class OrderBookService {
     }
     
     public List<TradeEvent> getRecentTrades() {
-        synchronized (tradeHistory) {
-            return new ArrayList<>(tradeHistory);
-        }
+        return new ArrayList<>(tradeHistoryService.getTradeHistory());
     }
     
     
