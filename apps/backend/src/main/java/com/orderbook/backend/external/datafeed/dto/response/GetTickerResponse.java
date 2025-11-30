@@ -1,7 +1,7 @@
-package com.orderbook.backend.external.dto.response;
+package com.orderbook.backend.external.datafeed.dto.response;
 
-import com.orderbook.backend.external.dto.data.CompanyDTO;
-import com.orderbook.backend.external.dto.common.PaginationDTO;
+import com.orderbook.backend.external.common.PaginationDTO;
+import com.orderbook.backend.external.datafeed.dto.data.CompanyDTO;
 import lombok.Data;
 
 import java.util.List;

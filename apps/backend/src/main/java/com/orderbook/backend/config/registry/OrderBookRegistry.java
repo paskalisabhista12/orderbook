@@ -1,9 +1,9 @@
 package com.orderbook.backend.config.registry;
 
-import com.orderbook.backend.external.dto.data.CompanyDTO;
-import com.orderbook.backend.external.dto.request.GetTickerRequest;
-import com.orderbook.backend.external.dto.response.GetTickerResponse;
-import com.orderbook.backend.external.service.DataFeedService;
+import com.orderbook.backend.external.datafeed.dto.data.CompanyDTO;
+import com.orderbook.backend.external.datafeed.dto.request.GetTickerRequest;
+import com.orderbook.backend.external.datafeed.dto.response.GetTickerResponse;
+import com.orderbook.backend.external.datafeed.service.DataFeedService;
 import com.orderbook.backend.factory.OrderBookFactory;
 import com.orderbook.backend.service.OrderBookService;
 import jakarta.annotation.PostConstruct;

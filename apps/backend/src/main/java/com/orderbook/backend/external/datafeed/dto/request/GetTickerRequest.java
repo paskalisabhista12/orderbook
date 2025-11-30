@@ -1,4 +1,4 @@
-package com.orderbook.backend.external.dto.request;
+package com.orderbook.backend.external.datafeed.dto.request;
 
 import lombok.Builder;
 import lombok.Data;

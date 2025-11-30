@@ -1,4 +1,4 @@
-package com.orderbook.backend.external.config;
+package com.orderbook.backend.external.datafeed.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

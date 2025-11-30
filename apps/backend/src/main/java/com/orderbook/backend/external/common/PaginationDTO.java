@@ -1,4 +1,4 @@
-package com.orderbook.backend.external.dto.common;
+package com.orderbook.backend.external.common;
 
 import lombok.Data;
 

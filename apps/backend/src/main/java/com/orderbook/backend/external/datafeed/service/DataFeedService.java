@@ -1,7 +1,7 @@
-package com.orderbook.backend.external.service;
+package com.orderbook.backend.external.datafeed.service;
 
-import com.orderbook.backend.external.dto.request.GetTickerRequest;
-import com.orderbook.backend.external.dto.response.GetTickerResponse;
+import com.orderbook.backend.external.datafeed.dto.request.GetTickerRequest;
+import com.orderbook.backend.external.datafeed.dto.response.GetTickerResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
