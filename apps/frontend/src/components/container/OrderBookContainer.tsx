@@ -2,7 +2,6 @@ import { useState } from "react";
 import OrderBook from "../OrderBook";
 import OrderForm from "../OrderForm";
 import { Side } from "@/utils/types";
-import GenerateOrderButton from "../GenerateOrderButton";
 
 export default function OrderBookContainer() {
     const [side, setSide] = useState<Side>("BUY");
