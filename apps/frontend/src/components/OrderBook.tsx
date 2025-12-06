@@ -55,7 +55,6 @@ export default function OrderBook({
             `/topic/orderbook/${ticker}`,
             (msg: IMessage) => {
                 const data = JSON.parse(msg.body);
-                console.log(data);
                 setBids(data.bids || []);
                 setAsks(data.asks || []);
                 setSummary(data);
