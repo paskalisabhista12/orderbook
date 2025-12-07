@@ -6,9 +6,9 @@ import { Order, Side } from "@/utils/types";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { submitOrder } from "@/api/OrderService";
 import toast from "react-hot-toast";
-import { Geist, Geist_Mono } from "next/font/google";
 
 type OrderFormProps = {
+    visible: boolean;
     ticker: string | undefined;
     side: Side;
     setSide: (side: Side) => void;
@@ -19,6 +19,7 @@ type OrderFormProps = {
 };
 
 export default function OrderForm({
+    visible,
     ticker,
     side,
     setSide,
@@ -48,11 +49,12 @@ export default function OrderForm({
             }
         }
     };
-
     return (
         <form
             onSubmit={handleSubmit}
-            className="bg-gray-900 shadow-2xl rounded-xl p-6 space-y-6 max-w-md mx-auto border-4 border-gray-800"
+            className={`${
+                visible ? "" : "hidden"
+            }  bg-gray-900 shadow-2xl rounded-xl p-6 space-y-6 max-w-md mx-auto border-4 border-gray-800`}
         >
             {/* Title */}
             <h2 className="flex justify-center text-xl font-semibold text-gray-100 border-b border-gray-700 pb-3">
