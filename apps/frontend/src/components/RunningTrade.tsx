@@ -46,6 +46,17 @@ export default function RunningTrade() {
         return d.toLocaleTimeString("en-GB", { hour12: false });
     };
 
+    const getChangeColor = (value: number) => {
+        if (value > 0) return "text-green-400";
+        if (value < 0) return "text-red-400";
+        return "text-gray-400";
+    };
+
+    const getSideColor = (side: "BUY" | "SELL") => {
+        if (side === "BUY") return "text-green-400";
+        return "text-red-400";
+    };
+
     return (
         <div className="bg-gray-900 text-white rounded-lg shadow-lg w-full max-w-5xl mx-auto p-2 font-mono">
             <div className="flex justify-center font-bold text-m mb-2 border border-gray-700 bg-gray-800 rounded-sm">
@@ -94,31 +105,25 @@ export default function RunningTrade() {
                                         {trade.lot}
                                     </td>
                                     <td
-                                        className={`px-2 py-1 text-right ${
-                                            trade.change >= 0
-                                                ? "text-green-400"
-                                                : "text-red-400"
-                                        }`}
+                                        className={`px-2 py-1 text-right ${getChangeColor(
+                                            trade.change
+                                        )}`}
                                     >
                                         {trade.change}
                                     </td>
+
                                     <td
-                                        className={`px-2 py-1 text-right ${
-                                            trade.percent >= 0
-                                                ? "text-green-400"
-                                                : "text-red-400"
-                                        }`}
+                                        className={`px-2 py-1 text-right ${getChangeColor(
+                                            trade.percent
+                                        )}`}
                                     >
-                                        {trade.percent &&
-                                            trade.percent.toFixed(2)}
-                                        %
+                                        {Number(trade.percent).toFixed(2)}%
                                     </td>
+
                                     <td
-                                        className={`px-2 py-1 text-center font-bold ${
-                                            trade.side === "BUY"
-                                                ? "text-green-400"
-                                                : "text-red-400"
-                                        }`}
+                                        className={`px-2 py-1 text-center font-bold ${getSideColor(
+                                            trade.side
+                                        )}`}
                                     >
                                         {trade.side === "BUY" ? "Buy" : "Sell"}
                                     </td>

@@ -74,6 +74,18 @@ export default function OrderBook({
         };
     }, [ticker, client, connected]);
 
+    const getPriceColorClass = (price?: number) => {
+        const prev = summary?.open ?? 0;
+
+        if (!price) return "text-gray-500";
+        if (!prev) return "text-gray-400";
+
+        if (price > prev) return "text-green-400 hover:text-green-300";
+        if (price < prev) return "text-red-400 hover:text-red-300";
+
+        return "text-gray-300 hover:text-gray-200";
+    };
+
     return (
         <div className="w-[530px] max-w-5xl mx-auto bg-gray-900 text-white rounded-lg shadow overflow-hidden font-mono border-4 border-gray-800">
             {/* Header */}
@@ -133,7 +145,7 @@ export default function OrderBook({
                                 }
                                 className={`py-1 pr-2 text-right font-semibold cursor-pointer ${
                                     bid
-                                        ? "text-green-400 hover:text-green-300"
+                                        ? getPriceColorClass(bid.price)
                                         : "text-gray-500 cursor-default"
                                 } ${isBestBid ? "bg-green-900/30" : ""}`}
                             >
@@ -145,14 +157,15 @@ export default function OrderBook({
                                 onClick={() =>
                                     ask && setPrice(String(ask.price))
                                 }
-                                className={`py-1 pl-2 font-semibold cursor-pointer ${
+                                className={`py-1 pl-2 font-semibold cursor-pointer text-left ${
                                     ask
-                                        ? "text-red-400 hover:text-red-300 text-left"
+                                        ? getPriceColorClass(ask.price)
                                         : "text-gray-500 cursor-default"
                                 } ${isBestAsk ? "bg-red-900/30" : ""}`}
                             >
                                 {ask ? ask.price.toFixed(2) : "-"}
                             </div>
+
                             <div className="py-1 pr-2 text-right">
                                 {ask ? nf.format(ask.totalLot) : "-"}
                             </div>
