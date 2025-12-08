@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronsRight } from "lucide-react";
+import { ChevronsRight, ChevronsLeft } from "lucide-react";
 
 type OrderBookFormButtonProps = {
     visible: boolean;
@@ -41,11 +41,7 @@ export default function OrderBookFormButton({
     "
         >
             {/* Icon */}
-            {loading ? (
-                <ChevronsRight size={22} />
-            ) : (
-                <ChevronsRight size={22} />
-            )}
+            {visible ? <ChevronsLeft size={22} /> : <ChevronsRight size={22} />}
 
             {/* Tooltip */}
             <span
