@@ -37,6 +37,7 @@ export default function OrderBookFormButton({
         hover:bg-gray-800 
         transition-all
         disabled:opacity-40 disabled:cursor-not-allowed
+        cursor-pointer
     "
         >
             {/* Icon */}

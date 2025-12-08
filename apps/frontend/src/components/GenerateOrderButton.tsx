@@ -30,6 +30,7 @@ export default function GenerateOrderButton({ ticker }: { ticker: string }) {
         hover:bg-gray-800 
         transition-all
         disabled:opacity-40 disabled:cursor-not-allowed
+        cursor-pointer
     "
         >
             {/* Icon */}

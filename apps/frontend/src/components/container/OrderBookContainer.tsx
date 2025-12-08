@@ -10,11 +10,10 @@ export default function OrderBookContainer() {
     const [price, setPrice] = useState<string>("");
     const [ticker, setTicker] = useState<string>("BBCA");
     const [lot, setLot] = useState<string>("");
-    const [isFormVisible, setIsFormVisible] = useState<boolean>(true);
+    const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
 
     return (
         <div className="flex gap-6">
-            {/* LEFT SECTION: OrderBook + OrderForm */}
             <div className="flex flex-col gap-4">
                 <OrderBook
                     ticker={ticker}
@@ -34,7 +33,6 @@ export default function OrderBookContainer() {
                 />
             </div>
 
-            {/* RIGHT SECTION: Action buttons */}
             <div className="flex flex-col gap-4">
                 <GenerateOrderButton ticker={ticker} />
                 <OrderBookFormButton
