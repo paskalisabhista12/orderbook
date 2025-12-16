@@ -22,14 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-@5z1948uj1%iw8@q7&ngjftbcbc^a_8!l$erppu%*aeqev@7q+"
+# == Production ==
+SECRET_KEY = config("SECRET_KEY")
+
+# == Development ==
+# SECRET_KEY = "django-insecure-@5z1948uj1%iw8@q7&ngjftbcbc^a_8!l$erppu%*aeqev@7q+"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+DEBUG = False
 
 # Application definition
 
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.scraper",
     "rest_framework",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -53,9 +54,26 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
 ]
+
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+    "Accept",
+]
+
+CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS").split(",")
+
+ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(",")
 
 
 ROOT_URLCONF = "datafeed.urls"
@@ -134,7 +152,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # RabbitMQ broker
-CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672//"
+CELERY_BROKER_URL = config("RABBIT_MQ_URL")
 
 # optional: store results
 CELERY_RESULT_BACKEND = "rpc://"
@@ -142,6 +160,8 @@ CELERY_RESULT_BACKEND = "rpc://"
 # timezone (match Django)
 CELERY_TIMEZONE = "UTC"
 CELERY_ENABLE_UTC = True
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CELERY_BEAT_SCHEDULE = {
     # --- Daily (D1) ---
