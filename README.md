@@ -7,7 +7,6 @@ It simulates how buy and sell orders are placed, matched, and updated in real ti
 
 ## 🚀 Features
 - Order submission (Buy/Sell)
-- Order matching engine (Price-Time priority)
 - Real-time orderbook updates
 - WebSocket support for live trades and orderbook snapshots
 - Dockerized for easy setup
@@ -15,10 +14,12 @@ It simulates how buy and sell orders are placed, matched, and updated in real ti
 ---
 
 ## 🛠️ Tech Stack
+- **Datafeed Backend**: Django (Python)
 - **Backend**: Spring Boot (Java)
-- **Frontend**: Next.js + Tailwind CSS
-- **Messaging**: WebSocket (STOMP)
-- **Containerization**: Docker & Docker Compose
+- **Frontend**: Next.js
+- **Message Queue**: RabbitMQ
+- **DB**: PostgreSQL
+- **Containerization**: Docker
 
 ---
 
@@ -29,7 +30,13 @@ It simulates how buy and sell orders are placed, matched, and updated in real ti
 git clone https://github.com/paskalisabhista12/orderbook.git
 cd orderbook
 ```
-### 2. Run with Docker
+### 2. Configure Environment Variables
+Fill in all required environment variables in the **root directory** and the **apps/datafeed directory**.
+### 3. Run with Docker
 ```bash
-docker-compose up
+# Run applications
+docker compose up
+
+# Run migration
+docker compose --profile migrate up
 ```
