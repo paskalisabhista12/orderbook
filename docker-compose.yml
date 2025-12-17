@@ -1,6 +1,16 @@
 version: "3.9"
 
 services:
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: rabbitmq
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+
     datafeed:
         build:
             context: ./apps/datafeed
@@ -8,6 +18,8 @@ services:
         container_name: datafeed-backend
         ports:
             - "8000:8000"
+        depends_on:
+            - rabbitmq
         environment:
             DB_NAME: ${DB_NAME}
             DB_USER: ${DB_USER}
@@ -18,6 +30,24 @@ services:
             RABBIT_MQ_URL: ${RABBIT_MQ_URL}
             ALLOWED_HOSTS: ${ALLOWED_HOSTS}
             CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+
+    datafeed-migrate:
+        build:
+            context: ./apps/datafeed
+            dockerfile: Dockerfile
+        container_name: datafeed-migrate
+        command: python manage.py migrate
+        profiles:
+            - migrate
+        depends_on:
+            - datafeed
+        environment:
+            DB_NAME: ${DB_NAME}
+            DB_USER: ${DB_USER}
+            DB_PASSWORD: ${DB_PASSWORD}
+            DB_HOST: ${DB_HOST}
+            DB_PORT: ${DB_PORT}
+            SECRET_KEY: ${SECRET_KEY}
 
     backend:
         build:
@@ -42,22 +72,12 @@ services:
             - backend
             - datafeed
 
-    rabbitmq:
-        image: rabbitmq:3-management
-        container_name: rabbitmq
-        environment:
-            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
-        ports:
-            - "5672:5672"
-            - "15672:15672"
-
     celery:
         build:
             context: ./apps/datafeed
             dockerfile: Dockerfile
         container_name: datafeed-celery
-        command: celery -A datafeed worker -l info -P solo    # Use solo to avoid yahoo finance rate limiter
+        command: celery -A datafeed worker -l info -P solo # Use solo to avoid yahoo finance rate limiter
         depends_on:
             - datafeed
             - rabbitmq
