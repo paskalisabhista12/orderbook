@@ -1,13 +1,13 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { Order, Side } from "@/utils/types";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { submitOrder } from "@/api/OrderService";
+import { useDraggable } from "@dnd-kit/core";
 import toast from "react-hot-toast";
 
 type OrderFormProps = {
+    position: { x: number; y: number };
     visible: boolean;
     ticker: string | undefined;
     side: Side;
@@ -19,6 +19,7 @@ type OrderFormProps = {
 };
 
 export default function OrderForm({
+    position,
     visible,
     ticker,
     side,
@@ -49,15 +50,31 @@ export default function OrderForm({
             }
         }
     };
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+        id: "order-form",
+    });
+
+    const style = {
+        transform: `translate(${position.x + (transform?.x || 0)}px, ${
+            position.y + (transform?.y || 0)
+        }px)`,
+    };
+
     return (
         <form
+            ref={setNodeRef}
+            style={style}
             onSubmit={handleSubmit}
             className={`${
                 visible ? "" : "hidden"
-            }  bg-gray-900 shadow-2xl rounded-xl p-6 space-y-6 max-w-md mx-auto border-4 border-gray-800`}
+            }  fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 shadow-2xl rounded-xl p-6 space-y-6 max-w-md mx-auto border-4 border-gray-800 z-10`}
         >
-            {/* Title */}
-            <h2 className="flex justify-center text-xl font-semibold text-gray-100 border-b border-gray-700 pb-3">
+            {/* Title (Draggable) */}
+            <h2
+                {...listeners}
+                {...attributes}
+                className="flex justify-center text-m font-semibold text-gray-100 border-b border-gray-700 pb-3 cursor-move"
+            >
                 New Order
             </h2>
 
